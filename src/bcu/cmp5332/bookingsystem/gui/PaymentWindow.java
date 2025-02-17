@@ -4,11 +4,28 @@ import bcu.cmp5332.bookingsystem.model.Booking;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * Provides a dialog window for processing payments for flight bookings.
+ * This class extends JDialog to create a modal payment processing interface.
+ * 
+ * @author Flight Booking System Team
+ * @version 1.0
+ */
 public class PaymentWindow extends JDialog {
+    
+    /** Serial version UID for serialization */
     private static final long serialVersionUID = 1L;
+    /** Reference to the parent main window */
     private final MainWindow parentWindow;
+    /** The booking for which payment is being processed */
     private final Booking booking;
 
+    /**
+     * Constructs a new PaymentWindow for processing a booking payment.
+     * 
+     * @param parent The parent MainWindow instance
+     * @param booking The Booking instance for which payment is to be processed
+     */
     public PaymentWindow(MainWindow parent, Booking booking) {
         super(parent, "Process Payment", true);
         this.parentWindow = parent;
@@ -16,6 +33,11 @@ public class PaymentWindow extends JDialog {
         initialize();
     }
 
+    /**
+     * Initializes the payment window components and sets up the GUI layout.
+     * Creates and positions all payment-related UI elements including
+     * booking details, payment method selection, and process button.
+     */
     private void initialize() {
         setSize(400, 300);
         setLocationRelativeTo(getParent());
@@ -48,6 +70,12 @@ public class PaymentWindow extends JDialog {
         setVisible(true);
     }
 
+    /**
+     * Processes the payment for the booking.
+     * Sets the booking's payment status to processed and shows appropriate
+     * success or error messages. Updates the parent window's booking display
+     * after successful payment processing.
+     */
     private void processPayment() {
         try {
             booking.setPaymentProcessed(true);

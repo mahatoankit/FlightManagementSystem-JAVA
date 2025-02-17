@@ -12,9 +12,35 @@ import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+/**
+ * Data manager implementation that handles the persistence of booking data.
+ * This class is responsible for loading and storing booking information from/to a text file.
+ * It implements the DataManager interface and provides specific functionality for
+ * managing booking records, including handling cases where referenced customers or
+ * flights may not exist in the system.
+ */
 public class BookingDataManager implements DataManager {
+    
+    /** 
+     * The file path where booking data is stored.
+     * Each booking is stored as a line with fields separated by the SEPARATOR constant.
+     */
     private final String RESOURCE = "./resources/data/bookings.txt";
     
+    /**
+     * Loads booking data from the text file into the flight booking system.
+     * Each line in the file represents a booking with fields separated by the SEPARATOR.
+     * The expected format is: bookingId::customerId::flightId::bookingDate::bookingFee
+     *
+     * Handles special cases:
+     * - If customer is not found, the booking is skipped
+     * - If flight is not found, the booking is marked as cancelled with a placeholder flight
+     * - Empty lines are skipped
+     *
+     * @param fbs the flight booking system to load the bookings into
+     * @throws IOException if there is an error reading the file
+     * @throws FlightBookingSystemException if there is an error parsing the booking data
+     */
     @Override
     public void loadData(FlightBookingSystem fbs) throws IOException, FlightBookingSystemException {
         File file = new File(RESOURCE);
@@ -69,6 +95,17 @@ public class BookingDataManager implements DataManager {
         }
     }
     
+    /**
+     * Stores the current booking data to the text file.
+     * Each booking is written as a single line with fields separated by the SEPARATOR.
+     * The format is: bookingId::customerId::flightId::bookingDate::bookingFee
+     *
+     * All bookings in the system are stored, including both active and cancelled bookings.
+     * Future implementations might separate cancelled bookings into a different file.
+     *
+     * @param fbs the flight booking system containing the bookings to store
+     * @throws IOException if there is an error writing to the file
+     */
     @Override
     public void storeData(FlightBookingSystem fbs) throws IOException {
         try (PrintWriter out = new PrintWriter(new FileWriter(RESOURCE))) {

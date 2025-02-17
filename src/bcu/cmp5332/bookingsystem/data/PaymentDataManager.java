@@ -7,9 +7,31 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Data manager implementation that handles the persistence of payment data.
+ * This class is responsible for loading and storing payment information from/to a text file.
+ * It implements the DataManager interface and provides specific functionality for
+ * managing payment records associated with bookings.
+ */
 public class PaymentDataManager implements DataManager {
-    private static final String FILENAME = "resources/payments.txt";
+    
+    /** 
+     * The file path where payment data is stored.
+     * Each payment is stored as a line with fields separated by the SEPARATOR constant.
+     */
+    private static final String FILENAME = "resources/data/payments.txt";
 
+    /**
+     * Loads payment data from the text file into the flight booking system.
+     * Each line in the file represents a payment with fields separated by the SEPARATOR.
+     * The expected format is: bookingId::amount::cardNumber::expiryDate::paymentDate
+     *
+     * All fields are required and must be present in the specified format.
+     * The payment date must be in ISO format (YYYY-MM-DD).
+     *
+     * @param fbs the flight booking system to load the payments into
+     * @throws IOException if there is an error reading the file
+     */
     @Override
     public void loadData(FlightBookingSystem fbs) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(FILENAME))) {
@@ -29,6 +51,17 @@ public class PaymentDataManager implements DataManager {
         }
     }
 
+    /**
+     * Stores the current payment data to the text file.
+     * Each payment is written as a single line with fields separated by the SEPARATOR.
+     * The format is: bookingId::amount::cardNumber::expiryDate::paymentDate
+     *
+     * All payment records are stored, including those for cancelled bookings.
+     * The payment date is stored in ISO format (YYYY-MM-DD).
+     *
+     * @param fbs the flight booking system containing the payments to store
+     * @throws IOException if there is an error writing to the file
+     */
     @Override
     public void storeData(FlightBookingSystem fbs) throws IOException {
         try (PrintWriter out = new PrintWriter(new FileWriter(FILENAME))) {

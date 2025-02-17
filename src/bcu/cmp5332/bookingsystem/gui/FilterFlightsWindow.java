@@ -10,22 +10,45 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * A GUI window that allows users to filter flights based on various criteria.
+ * This class provides functionality to filter flights by origin, destination,
+ * departure date, and price range.
+ */
 public class FilterFlightsWindow extends JFrame implements ActionListener {
 
+    /** The flight booking system instance */
     private FlightBookingSystem fbs;
+    /** Text field for entering origin airport */
     private JTextField originField = new JTextField(10);
+    /** Text field for entering destination airport */
     private JTextField destinationField = new JTextField(10);
+    /** Text field for entering departure date */
     private JTextField depDateField = new JTextField(10);
+    /** Text field for entering minimum price */
     private JTextField minPriceField = new JTextField(10);
+    /** Text field for entering maximum price */
     private JTextField maxPriceField = new JTextField(10);
+    /** Button to apply the filter */
     private JButton filterButton = new JButton("Apply Filter");
+    /** Table to display filtered results */
     private JTable resultsTable;
 
+    /**
+     * Constructs a new FilterFlightsWindow.
+     * 
+     * @param fbs The FlightBookingSystem instance to be used for filtering flights
+     */
     public FilterFlightsWindow(FlightBookingSystem fbs) {
         this.fbs = fbs;
         initialize();
     }
 
+    /**
+     * Initializes the GUI components and sets up the window layout.
+     * This method configures the look and feel, creates input fields,
+     * and sets up the results table.
+     */
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -66,12 +89,24 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Creates a styled JLabel with custom font.
+     * 
+     * @param text The text to be displayed in the label
+     * @return A styled JLabel instance
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
+    /**
+     * Creates a styled JButton with custom appearance.
+     * 
+     * @param button The JButton to be styled
+     * @return A styled JButton instance
+     */
     private JButton createStyledButton(JButton button) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBackground(new Color(0, 123, 255));
@@ -81,6 +116,11 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
         return button;
     }
 
+    /**
+     * Handles button click events.
+     * 
+     * @param e The ActionEvent triggered by the button click
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == filterButton) {
@@ -88,6 +128,12 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Applies the filter criteria and updates the results table.
+     * This method processes the user input, validates it, and filters
+     * the flights based on the specified criteria. The results are
+     * displayed in the table.
+     */
     private void applyFilter() {
         String origin = originField.getText().trim();
         String destination = destinationField.getText().trim();

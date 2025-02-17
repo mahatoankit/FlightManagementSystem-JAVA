@@ -6,18 +6,38 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * Provides a window interface for updating existing flight bookings in the system.
+ * This class extends JFrame and implements ActionListener to handle user interactions.
+ * 
+ * @author Flight Booking System Team
+ * @version 1.0
+ */
 public class UpdateBookingWindow extends JFrame implements ActionListener {
 
+    /** Reference to the main window */
     private MainWindow mw;
+    /** Text field for booking ID input */
     private JTextField bookingIdField = new JTextField(10);
+    /** Text field for new flight ID input */
     private JTextField newFlightIdField = new JTextField(10);
+    /** Button to trigger booking update */
     private JButton updateBtn = new JButton("Update Booking");
 
+    /**
+     * Constructs a new UpdateBookingWindow with a reference to the main window.
+     * 
+     * @param mw The MainWindow instance that created this window
+     */
     public UpdateBookingWindow(MainWindow mw) {
         this.mw = mw;
         initialize();
     }
 
+    /**
+     * Initializes the window components and sets up the GUI layout.
+     * Configures the look and feel, creates and positions all UI elements.
+     */
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -47,12 +67,24 @@ public class UpdateBookingWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Creates a styled JLabel with consistent formatting.
+     * 
+     * @param text The text to display in the label
+     * @return A styled JLabel instance
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
+    /**
+     * Creates a styled JButton with consistent formatting and appearance.
+     * 
+     * @param button The JButton to style
+     * @return A styled JButton instance
+     */
     private JButton createStyledButton(JButton button) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBackground(new Color(0, 123, 255));
@@ -62,6 +94,13 @@ public class UpdateBookingWindow extends JFrame implements ActionListener {
         return button;
     }
 
+    /**
+     * Handles the action events for the update button.
+     * Validates input and executes the update booking command.
+     * Shows success message on successful update and error messages for any failures.
+     * 
+     * @param e The ActionEvent triggered by the user
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {

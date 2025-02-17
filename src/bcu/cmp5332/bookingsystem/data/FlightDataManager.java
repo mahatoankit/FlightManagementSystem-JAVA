@@ -10,9 +10,35 @@ import java.io.PrintWriter;
 import java.time.LocalDate;
 import java.util.Scanner;
 
+/**
+ * Data manager implementation that handles the persistence of flight data.
+ * This class is responsible for loading and storing flight information from/to a text file.
+ * It implements the DataManager interface and provides specific functionality for
+ * managing flight records, including handling soft deletion status.
+ */
 public class FlightDataManager implements DataManager {
+    
+    /** 
+     * The file path where flight data is stored.
+     * Each flight is stored as a line with fields separated by the SEPARATOR constant.
+     */
     private final String RESOURCE = "./resources/data/flights.txt";
     
+    /**
+     * Loads flight data from the text file into the flight booking system.
+     * Each line in the file represents a flight with fields separated by the SEPARATOR.
+     * The expected format is: id::flightNumber::origin::destination::departureDate::basePrice::capacity::isDeleted
+     *
+     * Handles special cases:
+     * - If basePrice field is empty or missing, sets default price as 100.0
+     * - If capacity field is empty or missing, sets default capacity as 150
+     * - If isDeleted field is missing or empty, sets it to false
+     * - Empty lines are skipped
+     *
+     * @param fbs the flight booking system to load the flights into
+     * @throws IOException if there is an error reading the file
+     * @throws FlightBookingSystemException if there is an error parsing the flight data
+     */
     @Override
     public void loadData(FlightBookingSystem fbs) throws IOException, FlightBookingSystemException {
         File file = new File(RESOURCE);
@@ -47,6 +73,18 @@ public class FlightDataManager implements DataManager {
         }
     }
     
+    /**
+     * Stores the current flight data to the text file.
+     * Each flight is written as a single line with fields separated by the SEPARATOR.
+     * The format is: id::flightNumber::origin::destination::departureDate::basePrice::capacity::isDeleted
+     *
+     * All flights in the system are stored, including both active and soft-deleted flights.
+     * The isDeleted flag is used to track soft-deleted flights instead of removing them
+     * from the file completely.
+     *
+     * @param fbs the flight booking system containing the flights to store
+     * @throws IOException if there is an error writing to the file
+     */
     @Override
     public void storeData(FlightBookingSystem fbs) throws IOException {
         try (PrintWriter out = new PrintWriter(new FileWriter(RESOURCE))) {

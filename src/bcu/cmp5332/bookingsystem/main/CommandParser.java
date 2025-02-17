@@ -7,8 +7,25 @@ import java.io.InputStreamReader;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 
+/**
+ * Parses user commands and creates corresponding Command objects for the Flight Booking System.
+ * This class is responsible for interpreting user input and converting it into executable commands.
+ * 
+ * @author Flight Booking System Team
+ * @version 1.0
+ */
 public class CommandParser {
 
+    /**
+     * Parses a command line input and returns the corresponding Command object.
+     * Supports various commands including adding flights/customers, listing data,
+     * managing bookings, and system operations.
+     *
+     * @param line The command line input to parse
+     * @return A Command object corresponding to the input
+     * @throws IOException If there is an error reading user input
+     * @throws FlightBookingSystemException If the command is invalid or cannot be executed
+     */
     public static Command parse(String line) throws IOException, FlightBookingSystemException {
         try {
             String[] parts = line.split(" ", 3);
@@ -70,6 +87,17 @@ public class CommandParser {
         throw new FlightBookingSystemException("Invalid command.");
     }
     
+    /**
+     * Attempts to parse a date string into a LocalDate object with a specified number of attempts.
+     * Prompts the user repeatedly until a valid date is entered or attempts are exhausted.
+     *
+     * @param br The BufferedReader to read input from
+     * @param attempts The number of attempts allowed for parsing the date
+     * @return A LocalDate object parsed from user input
+     * @throws IOException If there is an error reading user input
+     * @throws FlightBookingSystemException If the date cannot be parsed after all attempts
+     * @throws IllegalArgumentException If the number of attempts is less than 1
+     */
     private static LocalDate parseDateWithAttempts(BufferedReader br, int attempts) throws IOException, FlightBookingSystemException {
         if (attempts < 1) {
             throw new IllegalArgumentException("Number of attempts should be higher than 0");
@@ -87,6 +115,14 @@ public class CommandParser {
         throw new FlightBookingSystemException("Incorrect departure date provided. Cannot create flight.");
     }
     
+    /**
+     * Attempts to parse a date string into a LocalDate object with 3 default attempts.
+     *
+     * @param br The BufferedReader to read input from
+     * @return A LocalDate object parsed from user input
+     * @throws IOException If there is an error reading user input
+     * @throws FlightBookingSystemException If the date cannot be parsed after all attempts
+     */
     private static LocalDate parseDateWithAttempts(BufferedReader br) throws IOException, FlightBookingSystemException {
         return parseDateWithAttempts(br, 3);
     }

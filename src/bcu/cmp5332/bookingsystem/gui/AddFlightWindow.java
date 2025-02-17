@@ -12,6 +12,11 @@ import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import javax.swing.*;
 
+/**
+ * A window interface for adding new flights to the booking system.
+ * This class provides a graphical user interface with form fields for flight
+ * details.
+ */
 public class AddFlightWindow extends JFrame implements ActionListener {
 
     private MainWindow mw;
@@ -20,20 +25,30 @@ public class AddFlightWindow extends JFrame implements ActionListener {
     private JTextField destinationText = new JTextField();
     private JTextField depDateText = new JTextField();
     private JTextField basePriceText = new JTextField(); // For base price
-    private JTextField capacityText = new JTextField();  // For capacity
+    private JTextField capacityText = new JTextField(); // For capacity
 
     private JButton addBtn = new JButton("Add");
     private JButton cancelBtn = new JButton("Cancel");
 
+    /**
+     * Constructs a new AddFlightWindow.
+     * 
+     * @param mw the parent MainWindow instance
+     */
     public AddFlightWindow(MainWindow mw) {
         this.mw = mw;
         initialize();
     }
 
+    /**
+     * Initializes the window components and sets up the layout.
+     * Creates and arranges all the necessary input fields and buttons.
+     */
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ex) { }
+        } catch (Exception ex) {
+        }
 
         setTitle("Add a New Flight");
         setSize(400, 300);
@@ -73,12 +88,24 @@ public class AddFlightWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Creates a styled label with custom font settings.
+     * 
+     * @param text the text to display in the label
+     * @return a styled JLabel instance
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
+    /**
+     * Creates a styled button with custom appearance settings.
+     * 
+     * @param button the JButton to style
+     * @return the styled JButton instance
+     */
     private JButton createStyledButton(JButton button) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBackground(new Color(0, 123, 255));
@@ -88,6 +115,11 @@ public class AddFlightWindow extends JFrame implements ActionListener {
         return button;
     }
 
+    /**
+     * Handles button click events for the Add and Cancel buttons.
+     * 
+     * @param ae the ActionEvent triggered by button click
+     */
     @Override
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == addBtn) {
@@ -97,6 +129,12 @@ public class AddFlightWindow extends JFrame implements ActionListener {
         }
     }
 
+    /**
+     * Processes the addition of a new flight using the input field values.
+     * Validates input data and creates a new AddFlight command.
+     * Displays error messages if validation fails or if there are system
+     * exceptions.
+     */
     private void addFlight() {
         try {
             String flightNumber = flightNoText.getText();
@@ -106,14 +144,17 @@ public class AddFlightWindow extends JFrame implements ActionListener {
             double basePrice = Double.parseDouble(basePriceText.getText());
             int capacity = Integer.parseInt(capacityText.getText());
 
-            AddFlight addFlightCmd = new AddFlight(flightNumber, origin, destination, departureDate, basePrice, capacity);
+            AddFlight addFlightCmd = new AddFlight(flightNumber, origin, destination, departureDate, basePrice,
+                    capacity);
             addFlightCmd.execute(mw.getFlightBookingSystem());
             mw.displayUpcomingFlights();
             this.dispose();
         } catch (DateTimeParseException dtpe) {
-            JOptionPane.showMessageDialog(this, "Date must be in YYYY-MM-DD format", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Date must be in YYYY-MM-DD format", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (NumberFormatException nfe) {
-            JOptionPane.showMessageDialog(this, "Price and Capacity must be numeric", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Price and Capacity must be numeric", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (FlightBookingSystemException ex) {
             JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }

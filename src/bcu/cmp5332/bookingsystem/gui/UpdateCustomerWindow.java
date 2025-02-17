@@ -6,21 +6,44 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * Provides a window interface for updating existing customer details in the system.
+ * This class extends JFrame and implements ActionListener to handle user interactions.
+ * 
+ * @author Flight Booking System Team
+ * @version 1.0
+ */
 public class UpdateCustomerWindow extends JFrame implements ActionListener {
 
+    /** Reference to the main window */
     private MainWindow mw;
+    /** Text field for customer ID input */
     private JTextField custIdField = new JTextField(10);
+    /** Text field for customer name input */
     private JTextField nameField = new JTextField(20);
+    /** Text field for customer phone input */
     private JTextField phoneField = new JTextField(15);
+    /** Text field for customer email input */
     private JTextField emailField = new JTextField(30);
+    /** Password field for customer password input */
     private JPasswordField passwordField = new JPasswordField(20);
+    /** Button to trigger customer update */
     private JButton updateButton = new JButton("Update Customer");
 
+    /**
+     * Constructs a new UpdateCustomerWindow with a reference to the main window.
+     * 
+     * @param mw The MainWindow instance that created this window
+     */
     public UpdateCustomerWindow(MainWindow mw) {
         this.mw = mw;
         initialize();
     }
 
+    /**
+     * Initializes the window components and sets up the GUI layout.
+     * Configures the look and feel, creates and positions all UI elements.
+     */
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -56,12 +79,24 @@ public class UpdateCustomerWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Creates a styled JLabel with consistent formatting.
+     * 
+     * @param text The text to display in the label
+     * @return A styled JLabel instance
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
+    /**
+     * Creates a styled JButton with consistent formatting and appearance.
+     * 
+     * @param button The JButton to style
+     * @return A styled JButton instance
+     */
     private JButton createStyledButton(JButton button) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBackground(new Color(0, 123, 255));
@@ -71,6 +106,13 @@ public class UpdateCustomerWindow extends JFrame implements ActionListener {
         return button;
     }
 
+    /**
+     * Handles the action events for the update button.
+     * Validates input and executes the update customer command.
+     * Shows success message on successful update and error messages for any failures.
+     * 
+     * @param e The ActionEvent triggered by the user
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {

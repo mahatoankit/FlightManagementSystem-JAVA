@@ -6,6 +6,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 
+/**
+ * A window interface for adding new customers to the booking system.
+ * Provides a form with fields for customer details including name, phone,
+ * email, and password.
+ */
 public class AddCustomerWindow extends JFrame implements ActionListener {
 
     private MainWindow mw;
@@ -15,11 +20,20 @@ public class AddCustomerWindow extends JFrame implements ActionListener {
     private JPasswordField passwordField = new JPasswordField(20);
     private JButton addBtn = new JButton("Add");
 
+    /**
+     * Constructs a new AddCustomerWindow.
+     * 
+     * @param mw the parent MainWindow instance
+     */
     public AddCustomerWindow(MainWindow mw) {
         this.mw = mw;
         initialize();
     }
 
+    /**
+     * Initializes the window components and sets up the layout.
+     * Creates and arranges all the necessary input fields and the add button.
+     */
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
@@ -53,12 +67,24 @@ public class AddCustomerWindow extends JFrame implements ActionListener {
         setVisible(true);
     }
 
+    /**
+     * Creates a styled label with custom font settings.
+     * 
+     * @param text the text to display in the label
+     * @return a styled JLabel instance
+     */
     private JLabel createStyledLabel(String text) {
         JLabel label = new JLabel(text);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
         return label;
     }
 
+    /**
+     * Creates a styled button with custom appearance settings.
+     * 
+     * @param button the JButton to style
+     * @return the styled JButton instance
+     */
     private JButton createStyledButton(JButton button) {
         button.setFont(new Font("Segoe UI", Font.BOLD, 14));
         button.setBackground(new Color(0, 123, 255));
@@ -68,6 +94,14 @@ public class AddCustomerWindow extends JFrame implements ActionListener {
         return button;
     }
 
+    /**
+     * Handles the add button click event.
+     * Collects input data, validates it, and creates a new customer in the system.
+     * Displays error messages if validation fails or if there are system
+     * exceptions.
+     * 
+     * @param e the ActionEvent triggered by button click
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
