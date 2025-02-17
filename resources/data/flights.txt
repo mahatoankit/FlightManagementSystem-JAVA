@@ -1,0 +1,8 @@
+1::LH2560::Birmingham::Munich::2022-11-25::100.0::150::false::
+2::ADHD::Calironia::New Yorik::2025-01-14::120.0::200::false::
+3::AAAA::KMT::KKK::2025-09-17::22.0::12::false::
+4::ONLY::NYC::LA::2025-03-10::10.0::2::true::
+5::SCDS::DEN::MARK::2025-02-16::20.0::3::false::
+6::A1V2::Beijing::KTM::2025-04-01::80.0::5::false::
+7::AASSS::ktm::nyc::2025-12-12::100.0::85::false::
+8::TRK::KTM::CND::2025-04-11::140.0::20::true::
