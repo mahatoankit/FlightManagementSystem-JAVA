@@ -104,23 +104,19 @@ public class MainWindow extends JFrame implements ActionListener {
         flightsMenu = new JMenu("Flights");
         flightsViewUpcoming = new JMenuItem("View Upcoming Flights");
         flightsViewUpcoming.setToolTipText("View flights that have not departed");
-        flightsViewUpcoming.setIcon(loadScaledIcon("resources/icons/view.png", 24, 24));
         flightsViewUpcoming.addActionListener(e -> displayUpcomingFlights());
         flightsViewAll = new JMenuItem("View All Flights");
         flightsViewAll.setToolTipText("View all flights including past flights");
-        flightsViewAll.setIcon(loadScaledIcon("resources/icons/view_all.png", 24, 24));
+    
         flightsViewAll.addActionListener(e -> displayAllFlights());
         flightsAdd = new JMenuItem("Add New Flight");
         flightsAdd.setToolTipText("Add a new flight (Admin only)");
-        flightsAdd.setIcon(loadScaledIcon("resources/icons/add.png", 24, 24));
         flightsAdd.addActionListener(e -> new AddFlightWindow(this));
         flightsDel = new JMenuItem("Delete Flight");
         flightsDel.setToolTipText("Delete a flight (Admin only)");
-        flightsDel.setIcon(loadScaledIcon("resources/icons/delete.png", 24, 24));
         flightsDel.addActionListener(e -> deleteSelectedFlight());
         JMenuItem flightsFilter = new JMenuItem("Filter Flights");
         flightsFilter.setToolTipText("Filter flights by criteria");
-        flightsFilter.setIcon(loadScaledIcon("resources/icons/filter.png", 24, 24));
         flightsFilter.addActionListener(e -> new FilterFlightsWindow(fbs));
         flightsMenu.add(flightsViewUpcoming);
         flightsMenu.add(flightsViewAll);
@@ -133,27 +129,27 @@ public class MainWindow extends JFrame implements ActionListener {
         bookingsMenu = new JMenu("Bookings");
         bookingsView = new JMenuItem("View Bookings");
         bookingsView.setToolTipText("View current bookings");
-        bookingsView.setIcon(loadScaledIcon("resources/icons/view.png", 24, 24));
+
         bookingsView.addActionListener(e -> displayBookings());
         bookingsIssue = new JMenuItem("New Booking");
         bookingsIssue.setToolTipText("Create a new booking");
-        bookingsIssue.setIcon(loadScaledIcon("resources/icons/add.png", 24, 24));
+ 
         bookingsIssue.addActionListener(e -> new AddBookingWindow(this));
         bookingsUpdate = new JMenuItem("Update Booking");
         bookingsUpdate.setToolTipText("Update an existing booking");
-        bookingsUpdate.setIcon(loadScaledIcon("resources/icons/update.png", 24, 24));
+
         bookingsUpdate.addActionListener(e -> new UpdateBookingWindow(this));
         bookingsCancel = new JMenuItem("Cancel Booking");
         bookingsCancel.setToolTipText("Cancel an existing booking");
-        bookingsCancel.setIcon(loadScaledIcon("resources/icons/cancel.png", 24, 24));
+
         bookingsCancel.addActionListener(e -> new CancelBookingWindow(this));
         bookingsViewAllCombined = new JMenuItem("View All Bookings");
         bookingsViewAllCombined.setToolTipText("View all bookings (active & cancelled)");
-        bookingsViewAllCombined.setIcon(loadScaledIcon("resources/icons/view_all.png", 24, 24));
+
         bookingsViewAllCombined.addActionListener(e -> displayAllBookings());
         bookingsPayment = new JMenuItem("Process Payment");
         bookingsPayment.setToolTipText("Process payment for a booking");
-        bookingsPayment.setIcon(loadScaledIcon("resources/icons/payment.png", 24, 24));
+
         bookingsPayment.addActionListener(e -> processSelectedBookingPayment());
         bookingsMenu.add(bookingsView);
         bookingsMenu.add(bookingsIssue);
@@ -168,23 +164,23 @@ public class MainWindow extends JFrame implements ActionListener {
         if (isAdmin) {
             JMenuItem viewActive = new JMenuItem("View Active Customers");
             viewActive.setToolTipText("Show only active (non-deleted) customers");
-            viewActive.setIcon(loadScaledIcon("resources/icons/view.png", 18, 18));
+
             viewActive.addActionListener(e -> displayActiveCustomers());
             JMenuItem viewAll = new JMenuItem("View All Customers");
             viewAll.setToolTipText("Show all registered customers including deleted ones");
-            viewAll.setIcon(loadScaledIcon("resources/icons/view_all.png", 18, 18));
+
             viewAll.addActionListener(e -> displayAllCustomers());
             JMenuItem addCustomer = new JMenuItem("Add New Customer");
             addCustomer.setToolTipText("Add a new customer");
-            addCustomer.setIcon(loadScaledIcon("resources/icons/add.png", 18, 18));
+
             addCustomer.addActionListener(e -> new AddCustomerWindow(this));
             JMenuItem updateCustomer = new JMenuItem("Update Customer");
             updateCustomer.setToolTipText("Update an existing customer");
-            updateCustomer.setIcon(loadScaledIcon("resources/icons/update.png", 18, 18));
+
             updateCustomer.addActionListener(e -> new UpdateCustomerWindow(this));
             JMenuItem deleteCustomer = new JMenuItem("Delete Customer");
             deleteCustomer.setToolTipText("Delete (soft-delete) a customer");
-            deleteCustomer.setIcon(loadScaledIcon("resources/icons/delete.png", 18, 18));
+
             deleteCustomer.addActionListener(e -> deleteSelectedCustomer());
             customersMenu.add(viewActive);
             customersMenu.add(viewAll);
@@ -194,7 +190,7 @@ public class MainWindow extends JFrame implements ActionListener {
         } else {
             JMenuItem myDetails = new JMenuItem("My Details");
             myDetails.setToolTipText("View your account details");
-            myDetails.setIcon(loadScaledIcon("resources/icons/details.png", 24, 24));
+
             myDetails.addActionListener(e -> displayCustomerDetails(loggedInCustomerId));
             customersMenu.add(myDetails);
         }
