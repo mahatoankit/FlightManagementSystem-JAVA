@@ -46,6 +46,7 @@ public class MainWindow extends JFrame implements ActionListener {
         this.fbs = fbs;
         setUIFont();
         initialize();
+        displayWelcomeScreen(); // Add this line
     }
 
     private void setUIFont() {
@@ -196,6 +197,73 @@ public class MainWindow extends JFrame implements ActionListener {
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
+    }
+
+    private void displayWelcomeScreen() {
+        JPanel welcomePanel = new JPanel(new BorderLayout(20, 20)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                GradientPaint gp = new GradientPaint(0, 0, DARK_BG, getWidth(), getHeight(), DARKER_BG);
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        welcomePanel.setBorder(BorderFactory.createEmptyBorder(50, 50, 50, 50));
+
+        // Welcome message
+        JLabel welcomeLabel = new JLabel("Welcome to Flight Booking System", SwingConstants.CENTER);
+        welcomeLabel.setFont(new Font("Segoe UI", Font.BOLD, 32));
+        welcomeLabel.setForeground(TEXT_COLOR);
+
+        // User info
+        String userType = isAdmin ? "Administrator" : "Customer";
+        String userName = "";
+        if (!isAdmin && loggedInCustomerId != null) {
+            try {
+                userName = fbs.getCustomerByID(loggedInCustomerId).getName();
+            } catch (Exception e) {
+                userName = "Unknown";
+            }
+        }
+
+        JLabel userLabel = new JLabel("Logged in as: " + userType + (userName.isEmpty() ? "" : " - " + userName),
+                SwingConstants.CENTER);
+        userLabel.setFont(new Font("Segoe UI", Font.PLAIN, 18));
+        userLabel.setForeground(TEXT_COLOR);
+
+        // Quick stats panel
+        JPanel statsPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+        statsPanel.setOpaque(false);
+
+        // Add system statistics
+        addStatsLabel(statsPanel, "Total Flights", fbs.getFlights().size());
+        addStatsLabel(statsPanel, "Total Customers", fbs.getCustomers().size());
+        addStatsLabel(statsPanel, "Total Bookings", fbs.getBookings().size());
+
+        // Layout components
+        JPanel centerPanel = new JPanel(new BorderLayout(20, 20));
+        centerPanel.setOpaque(false);
+        centerPanel.add(welcomeLabel, BorderLayout.NORTH);
+        centerPanel.add(userLabel, BorderLayout.CENTER);
+        centerPanel.add(statsPanel, BorderLayout.SOUTH);
+
+        welcomePanel.add(centerPanel, BorderLayout.CENTER);
+
+        // Refresh main window
+        getContentPane().removeAll();
+        getContentPane().add(welcomePanel);
+        revalidate();
+        repaint();
+    }
+
+    private void addStatsLabel(JPanel panel, String label, int value) {
+        JLabel statsLabel = new JLabel(label + ": " + value, SwingConstants.CENTER);
+        statsLabel.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        statsLabel.setForeground(TEXT_COLOR);
+        panel.add(statsLabel);
     }
 
     /**

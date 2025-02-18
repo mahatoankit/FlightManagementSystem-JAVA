@@ -8,3 +8,4 @@
 8::TRK::KTM::CND::2025-04-11::140.0::20::true::
 9::TEST::London::Paris::2025-05-12::199.99::150::true::
 10::ASDF::DELNI::KTTM::2025-11-11::199.99::50::false::
+11::NEWF::SCOTLAND::KATMANDU::2025-03-12::145.5::30::false::
