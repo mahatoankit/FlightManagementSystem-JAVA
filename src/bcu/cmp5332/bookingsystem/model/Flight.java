@@ -118,14 +118,33 @@ public class Flight {
      * @return the calculated ticket price
      */
     public double calculatePrice(LocalDate bookingDate) {
-        long daysLeft = ChronoUnit.DAYS.between(bookingDate, departureDate);
-        double price = basePrice;
-        if (daysLeft <= 7) {
-            price *= 1.50;
-        } else if (daysLeft <= 14) {
-            price *= 1.25;
+        double basePrice = this.basePrice;
+
+        // Calculate days until departure
+        long daysUntilFlight = ChronoUnit.DAYS.between(bookingDate, departureDate);
+
+        // Calculate seats remaining percentage
+        int seatsRemaining = capacity - passengers.size();
+        double occupancyRate = 1.0 - ((double) seatsRemaining / capacity);
+
+        // Price adjustments
+        double priceMultiplier = 1.0;
+
+        // Adjust based on days until flight
+        if (daysUntilFlight <= 7) {
+            priceMultiplier += 0.3; // 30% increase for last week
+        } else if (daysUntilFlight <= 30) {
+            priceMultiplier += 0.15; // 15% increase for last month
         }
-        return price;
+
+        // Adjust based on occupancy
+        if (occupancyRate >= 0.8) {
+            priceMultiplier += 0.25; // 25% increase when >80% full
+        } else if (occupancyRate >= 0.6) {
+            priceMultiplier += 0.15; // 15% increase when >60% full
+        }
+
+        return basePrice * priceMultiplier;
     }
 
     /**
@@ -146,9 +165,9 @@ public class Flight {
         if (passengers.contains(passenger)) {
             return false;
         }
-        
+
         boolean added = passengers.add(passenger);
-       
+
         return added;
     }
 

@@ -82,28 +82,17 @@ public class BookingDataManager implements DataManager {
     @Override
     public void storeData(FlightBookingSystem fbs) throws IOException {
         try (PrintWriter out = new PrintWriter(new FileWriter(RESOURCE))) {
-            // Store active bookings
             for (Booking booking : fbs.getBookings()) {
-                // Format: id::customerId::flightId::date::fee::paymentStatus
-                out.printf("%d::%d::%d::%s::%.2f::%b%n",
+                out.printf("%d%s%d%s%d%s%s%s%.2f%n",
                         booking.getId(),
+                        SEPARATOR,
                         booking.getCustomer().getId(),
+                        SEPARATOR,
                         booking.getFlight().getId(),
+                        SEPARATOR,
                         booking.getBookingDate(),
-                        booking.getBookingFee(),
-                        booking.isPaymentProcessed());
-            }
-
-            // Store cancelled bookings
-            for (Booking booking : fbs.getCancelledBookings()) {
-                // Add "cancelled" status at the end
-                out.printf("%d::%d::%d::%s::%.2f::%b::cancelled%n",
-                        booking.getId(),
-                        booking.getCustomer().getId(),
-                        booking.getFlight().getId(),
-                        booking.getBookingDate(),
-                        booking.getBookingFee(),
-                        booking.isPaymentProcessed());
+                        SEPARATOR,
+                        booking.getFinalPrice());
             }
         }
     }

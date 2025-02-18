@@ -41,7 +41,7 @@ public class AddBookingWindow extends JFrame implements ActionListener {
         custIdField = new JTextField();
         flightIdField = new JTextField();
 
-        setTitle("Add sffsdNew Booking");
+        setTitle("Add New Booking");
         setSize(500, 450); // increased from 450 to 500
         setLayout(new BorderLayout(10, 10));
 

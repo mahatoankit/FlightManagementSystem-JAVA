@@ -33,6 +33,8 @@ public class Booking {
 
     private static final String SEPARATOR = "::";
 
+    private final double finalPrice;
+
     /**
      * Constructs a new Booking with the specified details.
      *
@@ -49,6 +51,7 @@ public class Booking {
         this.bookingDate = bookingDate;
         this.bookingFee = bookingFee;
         this.paymentStatus = PaymentStatus.PENDING;
+        this.finalPrice = flight.calculatePrice(bookingDate);
         // Check if payment exists in payments.txt and set status accordingly
         try {
             java.nio.file.Path path = java.nio.file.Paths.get("resources/data/payments.txt");
@@ -165,5 +168,12 @@ public class Booking {
     public String toString() {
         return "Booking #" + id + " for " + customer.getName() + " on flight " + flight.getFlightNumber() +
                 " (" + bookingDate + "), Fee: $" + bookingFee;
+    }
+
+    /**
+     * @return the final price of the booking
+     */
+    public double getFinalPrice() {
+        return finalPrice;
     }
 }

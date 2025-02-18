@@ -641,7 +641,7 @@ public class MainWindow extends JFrame implements ActionListener {
     // --- Bookings ---
     public void displayBookings() {
         List<Booking> bookingsList = fbs.getBookings();
-        String[] columns = { "Booking ID", "Customer", "Flight", "Booking Date", "Fee", "Payment Status" };
+        String[] columns = { "Booking ID", "Customer", "Flight", "Booking Date", "Final Price", "Payment Status" };
         Object[][] data = new Object[bookingsList.size()][6];
         for (int i = 0; i < bookingsList.size(); i++) {
             Booking booking = bookingsList.get(i);
@@ -649,7 +649,7 @@ public class MainWindow extends JFrame implements ActionListener {
             data[i][1] = booking.getCustomer().getName();
             data[i][2] = booking.getFlight().getFlightNumber();
             data[i][3] = booking.getBookingDate();
-            data[i][4] = booking.getBookingFee();
+            data[i][4] = String.format("$%.2f", booking.getFinalPrice()); // Show final price
             data[i][5] = booking.isPaymentProcessed() ? "Paid" : "Pending";
         }
         JTable table = new JTable(data, columns) {
