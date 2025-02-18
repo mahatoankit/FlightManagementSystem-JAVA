@@ -12,19 +12,19 @@ import java.util.stream.Collectors;
 public class FlightBookingSystem {
     /** Current system date for calculating prices and validating bookings */
     private final LocalDate systemDate = LocalDate.now();
-    
+
     /** Map of all customers indexed by their IDs */
     private final Map<Integer, Customer> customers = new TreeMap<>();
-    
+
     /** Map of all flights indexed by their IDs */
     private final Map<Integer, Flight> flights = new TreeMap<>();
-    
+
     /** Map of active bookings indexed by their IDs */
     private final Map<Integer, Booking> bookings = new TreeMap<>();
-    
+
     /** Map of cancelled bookings kept for record-keeping */
     private final Map<Integer, Booking> cancelledBookings = new TreeMap<>();
-    
+
     /** List of all payments processed in the system */
     private final List<Payment> payments = new ArrayList<>();
 
@@ -35,6 +35,7 @@ public class FlightBookingSystem {
 
     /**
      * Returns a list of all active flights that haven't departed.
+     * 
      * @return list of available flights
      */
     public List<Flight> getFlights() {
@@ -42,14 +43,14 @@ public class FlightBookingSystem {
                 .filter(f -> !f.isDeleted() && !f.getDepartureDate().isBefore(systemDate))
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * @return list of all flights including deleted ones
      */
     public List<Flight> getAllFlights() {
         return new ArrayList<>(flights.values());
     }
-    
+
     /**
      * Retrieves a flight by its ID.
      *
@@ -59,14 +60,20 @@ public class FlightBookingSystem {
      */
     public Flight getFlightByID(int id) throws FlightBookingSystemException {
         Flight f = flights.get(id);
-        if (f == null || f.isDeleted()) {
-            throw new FlightBookingSystemException("No flight with that ID.");
+        if (f == null) {
+            System.out.println("DEBUG: Flight " + id + " not found in system");
+            throw new FlightBookingSystemException("Flight #" + id + " not found in the system.");
+        }
+        if (f.isDeleted()) {
+            System.out.println("DEBUG: Flight " + id + " was found but is deleted");
+            throw new FlightBookingSystemException("Flight #" + id + " has been deleted.");
         }
         return f;
     }
 
     /**
      * Returns a list of all active customers.
+     * 
      * @return list of non-deleted customers
      */
     public List<Customer> getCustomers() {
@@ -74,14 +81,14 @@ public class FlightBookingSystem {
                 .filter(c -> !c.isDeleted())
                 .collect(Collectors.toList());
     }
-    
+
     /**
      * @return list of all customers including deleted ones
      */
     public List<Customer> getAllCustomers() {
         return new ArrayList<>(customers.values());
     }
-    
+
     /**
      * Retrieves a customer by their ID.
      *
@@ -96,7 +103,7 @@ public class FlightBookingSystem {
         }
         return c;
     }
-    
+
     /**
      * Adds a new flight to the system.
      * Checks for duplicate flight numbers on the same date.
@@ -107,13 +114,13 @@ public class FlightBookingSystem {
     public void addFlight(Flight flight) throws FlightBookingSystemException {
         for (Flight existing : flights.values()) {
             if (existing.getFlightNumber().equals(flight.getFlightNumber()) &&
-                existing.getDepartureDate().equals(flight.getDepartureDate())) {
+                    existing.getDepartureDate().equals(flight.getDepartureDate())) {
                 throw new FlightBookingSystemException("Flight already exists on that date.");
             }
         }
         flights.put(flight.getId(), flight);
     }
-    
+
     /**
      * Adds a new customer to the system.
      * Ensures unique names and email addresses among active customers.
@@ -134,46 +141,63 @@ public class FlightBookingSystem {
         }
         customers.put(customer.getId(), customer);
     }
-    
+
     /** @return defensive copy of all bookings */
     public List<Booking> getBookings() {
         return new ArrayList<>(bookings.values());
     }
-    
+
     /** @return defensive copy of cancelled bookings */
     public List<Booking> getCancelledBookings() {
         return new ArrayList<>(cancelledBookings.values());
     }
-    
+
     /**
      * Creates a new booking for a customer on a flight.
      *
-     * @param customerId customer making the booking
-     * @param flightId flight to book
+     * @param customerId  customer making the booking
+     * @param flightId    flight to book
      * @param bookingDate date when booking is made
      * @return the created booking
-     * @throws FlightBookingSystemException if customer/flight not found or flight full
+     * @throws FlightBookingSystemException if customer/flight not found or flight
+     *                                      full
      */
     public Booking addBooking(int customerId, int flightId, LocalDate bookingDate) throws FlightBookingSystemException {
+        // Debug prints
+        System.out.println("DEBUG: Attempting to create booking for customer " + customerId + " on flight " + flightId);
+        System.out.println("DEBUG: Available flights: " + flights.keySet());
+
+        // Get customer and flight, throws exception if not found
         Customer customer = getCustomerByID(customerId);
         Flight flight = getFlightByID(flightId);
-        
+
+        // Try to add passenger to flight
         if (!flight.addPassenger(customer)) {
             throw new FlightBookingSystemException("Flight is full.");
         }
-        
+
+        // Calculate price based on booking date
         double price = flight.calculatePrice(bookingDate);
+
+        // Generate new booking ID
         int bookingId = bookings.size() + cancelledBookings.size() + 1;
+
+        // Create new booking
         Booking booking = new Booking(bookingId, customer, flight, bookingDate, price);
+
+        // Add booking to customer's bookings list
         customer.addBooking(booking);
+
+        // Add booking to system's bookings map
         bookings.put(bookingId, booking);
+
         return booking;
     }
-    
+
     /**
      * Cancels a booking and processes refund.
      *
-     * @param bookingId booking to cancel
+     * @param bookingId       booking to cancel
      * @param cancellationFee fee to charge for cancellation
      * @throws FlightBookingSystemException if booking not found
      */
@@ -186,7 +210,7 @@ public class FlightBookingSystem {
         bookings.remove(bookingId);
         cancelledBookings.put(bookingId, booking);
     }
-    
+
     /**
      * Removes a customer and cancels all their bookings.
      *
@@ -200,7 +224,7 @@ public class FlightBookingSystem {
             cancelBooking(booking.getId(), 0);
         }
     }
-    
+
     /**
      * Marks a flight as deleted.
      *
@@ -211,7 +235,7 @@ public class FlightBookingSystem {
         Flight flight = getFlightByID(flightId);
         flight.setDeleted(true);
     }
-    
+
     /**
      * Adds a booking from data import.
      *
@@ -229,7 +253,7 @@ public class FlightBookingSystem {
         }
         booking.getCustomer().addBooking(booking);
     }
-    
+
     /**
      * Retrieves a booking by its ID.
      *
@@ -247,15 +271,16 @@ public class FlightBookingSystem {
         }
         return booking;
     }
-    
+
     /**
      * Adds a payment to the system.
+     * 
      * @param payment the payment to add
      */
     public void addPayment(Payment payment) {
         payments.add(payment);
     }
-    
+
     /**
      * @return defensive copy of all payments
      */

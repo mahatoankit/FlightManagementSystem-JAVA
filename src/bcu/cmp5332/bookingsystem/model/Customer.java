@@ -10,22 +10,22 @@ import java.util.List;
 public class Customer {
     /** Unique identifier for the customer */
     private int id;
-    
+
     /** Customer's full name */
     private String name;
-    
+
     /** Customer's phone number */
     private String phone;
-    
+
     /** Customer's email address */
     private String email;
-    
+
     /** Customer's login password */
     private String password;
-    
+
     /** List of bookings made by this customer */
     private final List<Booking> bookings;
-    
+
     /** Flag indicating if the customer has been soft-deleted */
     private boolean isDeleted = false;
 
@@ -50,79 +50,114 @@ public class Customer {
     /**
      * @return the customer's unique identifier
      */
-    public int getId() { return id; }
+    public int getId() {
+        return id;
+    }
 
     /**
      * @return the customer's full name
      */
-    public String getName() { return name; }
+    public String getName() {
+        return name;
+    }
 
     /**
      * @return the customer's phone number
      */
-    public String getPhone() { return phone; }
+    public String getPhone() {
+        return phone;
+    }
 
     /**
      * @return the customer's email address
      */
-    public String getEmail() { return email; }
+    public String getEmail() {
+        return email;
+    }
 
     /**
      * @return the customer's login password
      */
-    public String getPassword() { return password; }
+    public String getPassword() {
+        return password;
+    }
 
     /**
      * @return true if the customer has been soft-deleted, false otherwise
      */
-    public boolean isDeleted() { return isDeleted; }
+    public boolean isDeleted() {
+        return isDeleted;
+    }
 
     /**
      * @return a defensive copy of the customer's booking list
      */
-    public List<Booking> getBookings() { return new ArrayList<>(bookings); }
+    public List<Booking> getBookings() {
+        return new ArrayList<>(bookings);
+    }
 
     /**
      * Updates the customer's name.
+     * 
      * @param name the new name
      */
-    public void setName(String name) { this.name = name; }
+    public void setName(String name) {
+        this.name = name;
+    }
 
     /**
      * Updates the customer's phone number.
+     * 
      * @param phone the new phone number
      */
-    public void setPhone(String phone) { this.phone = phone; }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     /**
      * Updates the customer's email address.
+     * 
      * @param email the new email address
      */
-    public void setEmail(String email) { this.email = email; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
 
     /**
      * Updates the customer's login password.
+     * 
      * @param password the new password
      */
-    public void setPassword(String password) { this.password = password; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
     /**
      * Updates the customer's deleted status.
+     * 
      * @param deleted true to mark as deleted, false otherwise
      */
-    public void setDeleted(boolean deleted) { this.isDeleted = deleted; }
+    public void setDeleted(boolean deleted) {
+        this.isDeleted = deleted;
+    }
 
     /**
      * Adds a new booking to the customer's booking list.
+     * 
      * @param booking the booking to add
      */
-    public void addBooking(Booking booking) { bookings.add(booking); }
+    public void addBooking(Booking booking) {
+        bookings.add(booking);
+    }
 
     /**
      * Removes a booking from the customer's booking list.
+     * 
      * @param booking the booking to remove
      */
-    public void cancelBooking(Booking booking) { bookings.remove(booking); }
+    public void cancelBooking(Booking booking) {
+        bookings.remove(booking);
+    }
 
     /**
      * Returns a short string representation of the customer's details.

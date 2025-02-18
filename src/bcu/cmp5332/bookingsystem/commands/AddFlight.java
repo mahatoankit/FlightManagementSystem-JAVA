@@ -25,7 +25,7 @@ public class AddFlight implements Command {
     private final LocalDate departureDate;
     
     /** The base ticket price for the flight */
-    private final double basePrice;
+    private final double price;
     
     /** The maximum number of passengers that can be booked */
     private final int capacity;
@@ -40,12 +40,12 @@ public class AddFlight implements Command {
      * @param basePrice     the base ticket price for the flight
      * @param capacity      the maximum number of passengers allowed
      */
-    public AddFlight(String flightNumber, String origin, String destination, LocalDate departureDate, double basePrice, int capacity) {
+    public AddFlight(String flightNumber, String origin, String destination, LocalDate departureDate, double price, int capacity) {
         this.flightNumber = flightNumber;
         this.origin = origin;
         this.destination = destination;
         this.departureDate = departureDate;
-        this.basePrice = basePrice;
+        this.price = price;
         this.capacity = capacity;
     }
 
@@ -59,6 +59,50 @@ public class AddFlight implements Command {
      */
     @Override
     public void execute(FlightBookingSystem flightBookingSystem) throws FlightBookingSystemException {
-        // ...existing code...
+        // Debug prints
+        System.out.println("Executing AddFlight command with following parameters:");
+        System.out.println("Flight Number: " + flightNumber);
+        System.out.println("Origin: " + origin);
+        System.out.println("Destination: " + destination);
+        System.out.println("Departure Date: " + departureDate);
+        System.out.println("Price: " + price);
+        System.out.println("Capacity: " + capacity);
+
+        // Validate inputs
+        if (flightNumber == null || flightNumber.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Flight number cannot be empty");
+        }
+        if (origin == null || origin.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Origin cannot be empty");
+        }
+        if (destination == null || destination.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Destination cannot be empty");
+        }
+        if (departureDate == null) {
+            throw new FlightBookingSystemException("Departure date cannot be null");
+        }
+        if (price <= 0) {
+            throw new FlightBookingSystemException("Price must be greater than 0");
+        }
+        if (capacity <= 0) {
+            throw new FlightBookingSystemException("Capacity must be greater than 0");
+        }
+
+        // Generate new flight ID
+        int maxId = flightBookingSystem.getAllFlights().stream()
+                .mapToInt(Flight::getId)
+                .max()
+                .orElse(0);
+        int newId = maxId + 1;
+
+        // Create and add the flight
+        Flight flight = new Flight(newId, flightNumber, origin, destination, 
+                departureDate, price, capacity);
+        
+        System.out.println("Created new flight with ID: " + newId);
+        
+        flightBookingSystem.addFlight(flight);
+        
+        System.out.println("Flight added successfully to the system");
     }
 }

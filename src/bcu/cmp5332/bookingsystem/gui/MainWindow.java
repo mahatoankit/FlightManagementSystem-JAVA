@@ -7,6 +7,9 @@ import bcu.cmp5332.bookingsystem.model.FlightBookingSystem;
 import bcu.cmp5332.bookingsystem.data.FlightBookingSystemData;
 import bcu.cmp5332.bookingsystem.main.FlightBookingSystemException;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
+import javax.swing.table.TableCellRenderer;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -58,7 +61,6 @@ public class MainWindow extends JFrame implements ActionListener {
             e.printStackTrace();
         }
     }
-
 
     private void styleMenuBar() {
         if (menuBar != null) {
@@ -161,7 +163,6 @@ public class MainWindow extends JFrame implements ActionListener {
         flightsViewUpcoming.addActionListener(e -> displayUpcomingFlights());
         flightsViewAll = new JMenuItem("View All Flights");
         flightsViewAll.setToolTipText("View all flights including past flights");
-
         flightsViewAll.addActionListener(e -> displayAllFlights());
         flightsAdd = new JMenuItem("Add New Flight");
         flightsAdd.setToolTipText("Add a new flight (Admin only)");
@@ -313,11 +314,55 @@ public class MainWindow extends JFrame implements ActionListener {
      */
     public void displayAllFlights() {
         List<Flight> allFlights = new ArrayList<>(fbs.getAllFlights());
+        List<Flight> activeFlights = allFlights.stream()
+                .filter(f -> !f.isDeleted())
+                .collect(Collectors.toList());
+        List<Flight> deletedFlights = allFlights.stream()
+                .filter(Flight::isDeleted)
+                .collect(Collectors.toList());
+
+        // Create panel with BorderLayout
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Create split pane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(300);
+
+        // Active flights panel
+        JPanel activePanel = new JPanel(new BorderLayout());
+        activePanel.setBorder(BorderFactory.createTitledBorder("Active Flights"));
+        JTable activeTable = createFlightTable(activeFlights);
+        activePanel.add(new JScrollPane(activeTable), BorderLayout.CENTER);
+
+        // Deleted flights panel
+        JPanel deletedPanel = new JPanel(new BorderLayout());
+        deletedPanel.setBorder(BorderFactory.createTitledBorder("Deleted Flights"));
+        JTable deletedTable = createFlightTable(deletedFlights);
+        deletedPanel.add(new JScrollPane(deletedTable), BorderLayout.CENTER);
+
+        // Add tables to split pane
+        splitPane.setTopComponent(activePanel);
+        splitPane.setBottomComponent(deletedPanel);
+
+        // Add split pane to main panel
+        mainPanel.add(splitPane, BorderLayout.CENTER);
+
+        // Refresh the main window with the new panel
+        getContentPane().removeAll();
+        getContentPane().add(mainPanel);
+        setTitle("Flight Booking System - All Flights");
+        revalidate();
+        repaint();
+    }
+
+    private JTable createFlightTable(List<Flight> flights) {
         String[] columns = { "ID", "Flight Number", "Origin", "Destination", "Departure Date", "Base Price",
                 "Capacity" };
-        Object[][] data = new Object[allFlights.size()][7];
-        for (int i = 0; i < allFlights.size(); i++) {
-            Flight flight = allFlights.get(i);
+        Object[][] data = new Object[flights.size()][7];
+
+        for (int i = 0; i < flights.size(); i++) {
+            Flight flight = flights.get(i);
             data[i][0] = flight.getId();
             data[i][1] = flight.getFlightNumber();
             data[i][2] = flight.getOrigin();
@@ -326,32 +371,29 @@ public class MainWindow extends JFrame implements ActionListener {
             data[i][5] = flight.getBasePrice();
             data[i][6] = flight.getCapacity();
         }
-        JTable table = new JTable(data, columns);
-        refreshTable(table, "All Flights");
-        table.addMouseListener(new MouseAdapter() {
-            /**
-             * Handles double-click events on the flights table.
-             * If a row is double-clicked, retrieves the flight ID from the selected row
-             * and displays the flight details by calling displayFlightDetails().
-             * If no row is selected on double-click, logs a message indicating that
-             * no row was selected.
-             *
-             * @param e The MouseEvent triggered by the double-click action
-             */
 
+        JTable table = new JTable(data, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.addMouseListener(new MouseAdapter() {
+            @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     int row = table.getSelectedRow();
                     if (row != -1) {
                         int flightId = (int) table.getValueAt(row, 0);
-                        System.out.println("Double-clicked flight ID: " + flightId);
                         displayFlightDetails(flightId);
-                    } else {
-                        System.out.println("No row selected on double-click.");
                     }
                 }
             }
         });
+
+        return table;
     }
 
     // Show detailed flight info, including passenger list.
@@ -517,56 +559,169 @@ public class MainWindow extends JFrame implements ActionListener {
      * represented by that row.
      */
     public void displayAllCustomers() {
-        List<Customer> all = fbs.getAllCustomers();
-        String[] columns = { "ID", "Name", "Phone", "Email", "Active" };
-        Object[][] data = new Object[all.size()][5];
-        for (int i = 0; i < all.size(); i++) {
-            Customer c = all.get(i);
+        List<Customer> allCustomers = fbs.getAllCustomers();
+        List<Customer> activeCustomers = allCustomers.stream()
+                .filter(c -> !c.isDeleted())
+                .collect(Collectors.toList());
+        List<Customer> deletedCustomers = allCustomers.stream()
+                .filter(Customer::isDeleted)
+                .collect(Collectors.toList());
+
+        // Create main panel with gradient background
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                int w = getWidth(), h = getHeight();
+                Color color1 = new Color(240, 248, 255);
+                Color color2 = new Color(230, 230, 250);
+                GradientPaint gp = new GradientPaint(0, 0, color1, w, h, color2);
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, w, h);
+            }
+        };
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Create split pane
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(300);
+        splitPane.setBorder(null);
+
+        // Active customers panel
+        JPanel activePanel = createCustomerPanel("Active Customers", activeCustomers,
+                new Color(240, 255, 240), new Color(144, 238, 144));
+
+        // Deleted customers panel
+        JPanel deletedPanel = createCustomerPanel("Deleted Customers", deletedCustomers,
+                new Color(255, 240, 240), new Color(255, 182, 193));
+
+        // Add panels to split pane
+        splitPane.setTopComponent(activePanel);
+        splitPane.setBottomComponent(deletedPanel);
+
+        // Add split pane to main panel
+        mainPanel.add(splitPane, BorderLayout.CENTER);
+
+        // Add statistics panel
+        JPanel statsPanel = createStatsPanel(activeCustomers.size(), deletedCustomers.size());
+        mainPanel.add(statsPanel, BorderLayout.SOUTH);
+
+        // Refresh the main window
+        getContentPane().removeAll();
+        getContentPane().add(mainPanel);
+        setTitle("Flight Booking System - Customer Management");
+        revalidate();
+        repaint();
+    }
+
+    private JPanel createCustomerPanel(String title, List<Customer> customers, Color bgColor1, Color bgColor2) {
+        JPanel panel = new JPanel(new BorderLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                int w = getWidth(), h = getHeight();
+                GradientPaint gp = new GradientPaint(0, 0, bgColor1, w, h, bgColor2);
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, w, h);
+            }
+        };
+
+        // Create titled border with custom font and color
+        TitledBorder titledBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(new Color(100, 100, 100), 1),
+                title);
+        titledBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                titledBorder,
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+
+        // Create and configure table
+        String[] columns = { "ID", "Name", "Phone", "Email", "Bookings" };
+        Object[][] data = new Object[customers.size()][5];
+        for (int i = 0; i < customers.size(); i++) {
+            Customer c = customers.get(i);
             data[i][0] = c.getId();
             data[i][1] = c.getName();
             data[i][2] = c.getPhone();
             data[i][3] = c.getEmail();
-            data[i][4] = c.isDeleted() ? "No" : "Yes";
+            data[i][4] = c.getBookings().size();
         }
-        JTable table = new JTable(data, columns) {
-            /**
-             * 
-             */
-            private static final long serialVersionUID = 1L;
 
+        JTable table = new JTable(data, columns) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
-        };
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.addMouseListener(new MouseAdapter() {
-            /**
-             * Handles double-click events on table rows.
-             * 
-             * When a row is double-clicked, it retrieves the customer ID
-             * from the selected row and displays the booking details for
-             * the corresponding customer. If no row is selected on double-click,
-             * a message is printed indicating that no row was selected.
-             * 
-             * @param e the MouseEvent representing the double-click
-             */
 
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                Component comp = super.prepareRenderer(renderer, row, col);
+                if (comp instanceof JComponent) {
+                    ((JComponent) comp).setToolTipText(String.valueOf(getValueAt(row, col)));
+                }
+                return comp;
+            }
+        };
+
+        // Style the table
+        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.setRowHeight(25);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        table.setGridColor(new Color(200, 200, 200));
+
+        // Add mouse listener for double-click
+        table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
                     int row = table.getSelectedRow();
                     if (row != -1) {
                         int customerId = (int) table.getValueAt(row, 0);
-                        System.out.println("Double-clicked all customer ID: " + customerId);
                         showCustomerBookingDetails(customerId);
-                    } else {
-                        System.out.println("No row selected on double-click.");
                     }
                 }
             }
         });
-        refreshTable(table, "All Customers");
+
+        // Add table to scroll pane
+        JScrollPane scrollPane = new JScrollPane(table);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        panel.add(scrollPane, BorderLayout.CENTER);
+
+        return panel;
+    }
+
+    private JPanel createStatsPanel(int activeCount, int deletedCount) {
+        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        statsPanel.setBackground(new Color(240, 240, 240));
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+
+        // Create statistics labels with custom styling
+        JLabel activeLabel = new JLabel(String.format("Active Customers: %d", activeCount));
+        JLabel deletedLabel = new JLabel(String.format("Deleted Customers: %d", deletedCount));
+        JLabel totalLabel = new JLabel(String.format("Total Customers: %d", activeCount + deletedCount));
+
+        Font statsFont = new Font("Segoe UI", Font.BOLD, 12);
+        activeLabel.setFont(statsFont);
+        deletedLabel.setFont(statsFont);
+        totalLabel.setFont(statsFont);
+
+        activeLabel.setForeground(new Color(46, 125, 50));
+        deletedLabel.setForeground(new Color(198, 40, 40));
+        totalLabel.setForeground(new Color(13, 71, 161));
+
+        statsPanel.add(activeLabel);
+        statsPanel.add(new JSeparator(JSeparator.VERTICAL));
+        statsPanel.add(deletedLabel);
+        statsPanel.add(new JSeparator(JSeparator.VERTICAL));
+        statsPanel.add(totalLabel);
+
+        return statsPanel;
     }
 
     // New: Show detailed booking info for a customer.
@@ -697,6 +852,8 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     public FlightBookingSystem getFlightBookingSystem() {
+        // Add debug print
+        System.out.println("DEBUG: Current flights in system: " + fbs.getFlights().size());
         return fbs;
     }
 
@@ -800,7 +957,7 @@ public class MainWindow extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
-        
+
         throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 }
