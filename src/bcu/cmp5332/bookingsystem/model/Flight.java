@@ -146,9 +146,9 @@ public class Flight {
         if (passengers.contains(passenger)) {
             return false;
         }
-        System.out.println("DEBUG: Adding passenger " + passenger.getName() + " to flight " + flightNumber);
+        
         boolean added = passengers.add(passenger);
-        System.out.println("DEBUG: Current passenger count: " + passengers.size());
+       
         return added;
     }
 
@@ -166,8 +166,6 @@ public class Flight {
      * @return a defensive copy of the passenger list
      */
     public List<Customer> getPassengers() {
-        System.out.println("DEBUG: Getting passengers for flight " + flightNumber);
-        System.out.println("DEBUG: Number of passengers: " + passengers.size());
         for (Customer c : passengers) {
             System.out.println("DEBUG: Passenger: " + c.getName());
         }
