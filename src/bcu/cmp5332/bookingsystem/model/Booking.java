@@ -9,27 +9,29 @@ import java.time.LocalDate;
 public class Booking {
     /** Unique identifier for the booking */
     private int id;
-    
+
     /** Customer who made the booking */
     private final Customer customer;
-    
+
     /** Flight that was booked */
     private final Flight flight;
-    
+
     /** Date when the booking was made */
     private final LocalDate bookingDate;
-    
+
     /** Flag indicating if the booking has been cancelled */
     private boolean isCancelled = false;
-    
+
     /** Fee charged for the booking */
     private double bookingFee;
-    
+
     /** Current status of the payment (PENDING, PAID, FAILED) */
     private PaymentStatus paymentStatus;
-    
+
     /** Flag indicating if payment has been processed */
     private boolean paymentProcessed = false;
+
+    private static final String SEPARATOR = "::";
 
     /**
      * Constructs a new Booking with the specified details.
@@ -47,6 +49,24 @@ public class Booking {
         this.bookingDate = bookingDate;
         this.bookingFee = bookingFee;
         this.paymentStatus = PaymentStatus.PENDING;
+        // Check if payment exists in payments.txt and set status accordingly
+        try {
+            java.nio.file.Path path = java.nio.file.Paths.get("resources/data/payments.txt");
+            if (java.nio.file.Files.exists(path)) {
+                java.util.List<String> lines = java.nio.file.Files.readAllLines(path);
+                for (String line : lines) {
+                    String[] parts = line.split(SEPARATOR);
+                    if (parts.length >= 5 && Integer.parseInt(parts[0]) == this.id) {
+                        this.paymentStatus = PaymentStatus.PAID;
+                        this.paymentProcessed = true;
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If there's any error reading the file, keep default PENDING status
+            System.err.println("Error checking payment status: " + e.getMessage());
+        }
     }
 
     /**

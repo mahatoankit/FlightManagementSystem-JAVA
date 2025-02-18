@@ -223,8 +223,8 @@ public class PaymentWindow extends JDialog {
             showErrorMessage("Please enter an expiry date");
             return false;
         }
-        if (!expiryDate.matches("\\d{2}/\\d{2}")) {
-            showErrorMessage("Expiry date must be in MM/YY format");
+        if (!expiryDate.matches("\\d{2}-\\d{2}")) {
+            showErrorMessage("Expiry date must be in MM-YY format");
             return false;
         }
         return true;
