@@ -12,6 +12,15 @@ public class Authenticator {
         users.add(new User("customer", "cust123", Role.CUSTOMER));
     }
     
+    /**
+     * Authenticates a user by checking the given username and password against
+     * the registered users. If the credentials are valid, returns the User
+     * object associated with the username. Otherwise, returns null.
+     *
+     * @param username The username to check
+     * @param password The password to check
+     * @return The associated User object, or null if the credentials are invalid
+     */
     public User login(String username, String password) {
         for (User user : users) {
             if (user.getUsername().equalsIgnoreCase(username) && user.checkPassword(password)) {
