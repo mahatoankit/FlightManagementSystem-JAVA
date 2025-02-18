@@ -34,6 +34,14 @@ public class MainWindow extends JFrame implements ActionListener {
     private JMenuItem bookingsView, bookingsIssue, bookingsUpdate, bookingsCancel, bookingsViewAllCombined;
     private JMenuItem bookingsPayment; // Add this as a class field
 
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color SUCCESS_COLOR = new Color(75, 175, 80);
+    private static final Color WARNING_COLOR = new Color(255, 152, 0);
+    private static final Color ERROR_COLOR = new Color(255, 87, 34);
+
     public MainWindow(FlightBookingSystem fbs) {
         this.fbs = fbs;
         setUIFont();
@@ -43,58 +51,95 @@ public class MainWindow extends JFrame implements ActionListener {
     private void setUIFont() {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            Font menuFont = new Font("Segoe UI", Font.PLAIN, 14);
-            Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
 
-            // Modern color scheme
-            Color primaryColor = new Color(63, 81, 181); // Material Indigo
-            Color accentColor = new Color(255, 64, 129); // Material Pink
-            Color backgroundColor = new Color(250, 250, 250);
+            // Base fonts
+            Font baseFont = new Font("Segoe UI", Font.PLAIN, 14);
+            Font boldFont = baseFont.deriveFont(Font.BOLD);
 
-            // Set UI properties
-            UIManager.put("Menu.font", menuFont);
-            UIManager.put("MenuItem.font", menuFont);
-            UIManager.put("Table.font", tableFont);
-            UIManager.put("Label.font", menuFont);
-            UIManager.put("Button.font", menuFont);
+            // Set dark theme colors
+            UIManager.put("Panel.background", DARK_BG);
+            UIManager.put("MenuBar.background", DARKER_BG);
+            UIManager.put("Menu.background", DARKER_BG);
+            UIManager.put("MenuItem.background", DARKER_BG);
+            UIManager.put("Table.background", DARKER_BG);
+            UIManager.put("Table.foreground", TEXT_COLOR);
+            UIManager.put("TableHeader.background", DARKER_BG);
+            UIManager.put("TableHeader.foreground", TEXT_COLOR);
 
-            // Enhanced table styling
-            UIManager.put("Table.rowHeight", 30);
-            UIManager.put("Table.gridColor", new Color(240, 240, 240));
-            UIManager.put("Table.selectionBackground", primaryColor);
+            // Text colors
+            UIManager.put("Label.foreground", TEXT_COLOR);
+            UIManager.put("Menu.foreground", TEXT_COLOR);
+            UIManager.put("MenuItem.foreground", TEXT_COLOR);
+
+            // Selection colors
+            UIManager.put("Table.selectionBackground", ACCENT_COLOR);
             UIManager.put("Table.selectionForeground", Color.WHITE);
-            UIManager.put("TableHeader.background", backgroundColor);
-            UIManager.put("TableHeader.font", new Font("Segoe UI", Font.BOLD, 13));
 
-            // Menu styling
-            UIManager.put("MenuBar.background", backgroundColor);
-            UIManager.put("Menu.background", backgroundColor);
-            UIManager.put("Menu.selectionBackground", primaryColor);
-            UIManager.put("Menu.selectionForeground", Color.WHITE);
-            UIManager.put("MenuItem.selectionBackground", primaryColor);
-            UIManager.put("MenuItem.selectionForeground", Color.WHITE);
+            // Dialog colors
+            UIManager.put("OptionPane.background", DARK_BG);
+            UIManager.put("OptionPane.messageForeground", TEXT_COLOR);
 
-            // Button styling
-            UIManager.put("Button.background", primaryColor);
-            UIManager.put("Button.foreground", Color.WHITE);
-            UIManager.put("Button.select", accentColor);
+            // Fonts
+            UIManager.put("Menu.font", boldFont);
+            UIManager.put("MenuItem.font", baseFont);
+            UIManager.put("Table.font", baseFont);
+            UIManager.put("TableHeader.font", boldFont);
+            UIManager.put("Label.font", baseFont);
+
+            // Component styling
+            UIManager.put("Table.rowHeight", 30);
+            UIManager.put("Table.intercellSpacing", new Dimension(10, 5));
+            UIManager.put("Table.gridColor", DARKER_BG);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void styleMenuBar() {
-        if (menuBar != null) {
-            menuBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-            menuBar.setOpaque(true);
+    private JTable createStyledTable(Object[][] data, String[] columns) {
+        JTable table = new JTable(data, columns) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
 
-            for (int i = 0; i < menuBar.getMenuCount(); i++) {
-                JMenu menu = menuBar.getMenu(i);
-                if (menu != null) {
-                    menu.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-                    styleMenuItems(menu);
+            @Override
+            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
+                Component comp = super.prepareRenderer(renderer, row, col);
+                if (!isRowSelected(row)) {
+                    comp.setBackground(DARKER_BG);
+                    comp.setForeground(TEXT_COLOR);
                 }
+                return comp;
+            }
+        };
+
+        // Style improvements
+        table.setBackground(DARKER_BG);
+        table.setForeground(TEXT_COLOR);
+        table.setSelectionBackground(ACCENT_COLOR);
+        table.setSelectionForeground(Color.WHITE);
+        table.setGridColor(DARK_BG);
+        table.setRowHeight(35);
+        table.getTableHeader().setBackground(DARKER_BG);
+        table.getTableHeader().setForeground(TEXT_COLOR);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+        return table;
+    }
+
+    private void styleMenuBar() {
+        menuBar.setBackground(DARKER_BG);
+        menuBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
+        Component[] components = menuBar.getComponents();
+        for (Component comp : components) {
+            if (comp instanceof JMenu) {
+                JMenu menu = (JMenu) comp;
+                menu.setBackground(DARKER_BG);
+                menu.setForeground(TEXT_COLOR);
+                menu.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+                styleMenuItems(menu);
             }
         }
     }
@@ -103,15 +148,20 @@ public class MainWindow extends JFrame implements ActionListener {
         for (int i = 0; i < menu.getItemCount(); i++) {
             JMenuItem item = menu.getItem(i);
             if (item != null) {
-                item.setBackground(Color.WHITE);
-                item.setBorderPainted(false);
+                item.setBackground(DARKER_BG);
+                item.setForeground(TEXT_COLOR);
+                item.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+
+                // Hover effect
                 item.addMouseListener(new MouseAdapter() {
                     public void mouseEntered(MouseEvent e) {
-                        item.setBackground(new Color(230, 240, 250));
+                        item.setBackground(ACCENT_COLOR);
+                        item.setForeground(Color.WHITE);
                     }
 
                     public void mouseExited(MouseEvent e) {
-                        item.setBackground(Color.WHITE);
+                        item.setBackground(DARKER_BG);
+                        item.setForeground(TEXT_COLOR);
                     }
                 });
             }
@@ -342,23 +392,52 @@ public class MainWindow extends JFrame implements ActionListener {
                 .filter(Flight::isDeleted)
                 .collect(Collectors.toList());
 
-        // Create panel with BorderLayout
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        // Create panel with BorderLayout and dark theme
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10)) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                int w = getWidth(), h = getHeight();
+                GradientPaint gp = new GradientPaint(0, 0, DARK_BG, w, h, DARKER_BG);
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, w, h);
+            }
+        };
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        // Create split pane
+        // Create split pane with dark theme
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setDividerLocation(300);
+        splitPane.setBackground(DARKER_BG);
+        splitPane.setBorder(null);
 
         // Active flights panel
         JPanel activePanel = new JPanel(new BorderLayout());
-        activePanel.setBorder(BorderFactory.createTitledBorder("Active Flights"));
+        TitledBorder activeBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(TEXT_COLOR),
+                "Active Flights");
+        activeBorder.setTitleColor(TEXT_COLOR);
+        activeBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        activePanel.setBorder(BorderFactory.createCompoundBorder(
+                activeBorder,
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        activePanel.setBackground(DARKER_BG);
         JTable activeTable = createFlightTable(activeFlights);
         activePanel.add(new JScrollPane(activeTable), BorderLayout.CENTER);
 
         // Deleted flights panel
         JPanel deletedPanel = new JPanel(new BorderLayout());
-        deletedPanel.setBorder(BorderFactory.createTitledBorder("Deleted Flights"));
+        TitledBorder deletedBorder = BorderFactory.createTitledBorder(
+                BorderFactory.createLineBorder(TEXT_COLOR),
+                "Deleted Flights");
+        deletedBorder.setTitleColor(TEXT_COLOR);
+        deletedBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        deletedPanel.setBorder(BorderFactory.createCompoundBorder(
+                deletedBorder,
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        deletedPanel.setBackground(DARKER_BG);
         JTable deletedTable = createFlightTable(deletedFlights);
         deletedPanel.add(new JScrollPane(deletedTable), BorderLayout.CENTER);
 
@@ -368,6 +447,29 @@ public class MainWindow extends JFrame implements ActionListener {
 
         // Add split pane to main panel
         mainPanel.add(splitPane, BorderLayout.CENTER);
+
+        // Add statistics panel
+        JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
+        statsPanel.setBackground(DARKER_BG);
+        JLabel activeLabel = new JLabel("Active Flights: " + activeFlights.size());
+        JLabel deletedLabel = new JLabel("Deleted Flights: " + deletedFlights.size());
+        JLabel totalLabel = new JLabel("Total Flights: " + allFlights.size());
+
+        // Style the labels
+        Font statsFont = new Font("Segoe UI", Font.BOLD, 12);
+        activeLabel.setFont(statsFont);
+        deletedLabel.setFont(statsFont);
+        totalLabel.setFont(statsFont);
+
+        activeLabel.setForeground(SUCCESS_COLOR);
+        deletedLabel.setForeground(ERROR_COLOR);
+        totalLabel.setForeground(TEXT_COLOR);
+
+        statsPanel.add(activeLabel);
+        statsPanel.add(deletedLabel);
+        statsPanel.add(totalLabel);
+
+        mainPanel.add(statsPanel, BorderLayout.SOUTH);
 
         // Refresh the main window with the new panel
         getContentPane().removeAll();
@@ -611,7 +713,7 @@ public class MainWindow extends JFrame implements ActionListener {
                 .filter(Customer::isDeleted)
                 .collect(Collectors.toList());
 
-        // Create main panel with gradient background
+        // Create main panel with dark theme gradient
         JPanel mainPanel = new JPanel(new BorderLayout(10, 10)) {
             @Override
             protected void paintComponent(Graphics g) {
@@ -619,9 +721,7 @@ public class MainWindow extends JFrame implements ActionListener {
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
                 int w = getWidth(), h = getHeight();
-                Color color1 = new Color(240, 248, 255);
-                Color color2 = new Color(230, 230, 250);
-                GradientPaint gp = new GradientPaint(0, 0, color1, w, h, color2);
+                GradientPaint gp = new GradientPaint(0, 0, DARK_BG, w, h, DARKER_BG);
                 g2d.setPaint(gp);
                 g2d.fillRect(0, 0, w, h);
             }
@@ -632,14 +732,15 @@ public class MainWindow extends JFrame implements ActionListener {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setDividerLocation(300);
         splitPane.setBorder(null);
+        splitPane.setBackground(DARKER_BG);
 
         // Active customers panel
         JPanel activePanel = createCustomerPanel("Active Customers", activeCustomers,
-                new Color(240, 255, 240), new Color(144, 238, 144));
+                DARK_BG, DARKER_BG);
 
         // Deleted customers panel
         JPanel deletedPanel = createCustomerPanel("Deleted Customers", deletedCustomers,
-                new Color(255, 240, 240), new Color(255, 182, 193));
+                DARK_BG, DARKER_BG);
 
         // Add panels to split pane
         splitPane.setTopComponent(activePanel);
@@ -674,16 +775,17 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         };
 
-        // Create titled border with custom font and color
+        // Create titled border with dark theme
         TitledBorder titledBorder = BorderFactory.createTitledBorder(
-                BorderFactory.createLineBorder(new Color(100, 100, 100), 1),
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
                 title);
         titledBorder.setTitleFont(new Font("Segoe UI", Font.BOLD, 14));
+        titledBorder.setTitleColor(TEXT_COLOR);
         panel.setBorder(BorderFactory.createCompoundBorder(
                 titledBorder,
                 BorderFactory.createEmptyBorder(5, 5, 5, 5)));
 
-        // Create and configure table
+        // Create and style table
         String[] columns = { "ID", "Name", "Phone", "Email", "Bookings" };
         Object[][] data = new Object[customers.size()][5];
         for (int i = 0; i < customers.size(); i++) {
@@ -700,23 +802,18 @@ public class MainWindow extends JFrame implements ActionListener {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
-
-            @Override
-            public Component prepareRenderer(TableCellRenderer renderer, int row, int col) {
-                Component comp = super.prepareRenderer(renderer, row, col);
-                if (comp instanceof JComponent) {
-                    ((JComponent) comp).setToolTipText(String.valueOf(getValueAt(row, col)));
-                }
-                return comp;
-            }
         };
 
         // Style the table
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setRowHeight(25);
-        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 12));
-        table.setFont(new Font("Segoe UI", Font.PLAIN, 12));
-        table.setGridColor(new Color(200, 200, 200));
+        table.setBackground(DARKER_BG);
+        table.setForeground(TEXT_COLOR);
+        table.setSelectionBackground(ACCENT_COLOR);
+        table.setSelectionForeground(Color.WHITE);
+        table.setGridColor(DARK_BG);
+        table.setRowHeight(30);
+        table.getTableHeader().setBackground(DARKER_BG);
+        table.getTableHeader().setForeground(TEXT_COLOR);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         // Add mouse listener for double-click
         table.addMouseListener(new MouseAdapter() {
@@ -732,9 +829,11 @@ public class MainWindow extends JFrame implements ActionListener {
             }
         });
 
-        // Add table to scroll pane
+        // Add table to scroll pane with dark theme
         JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setBackground(DARKER_BG);
+        scrollPane.getViewport().setBackground(DARKER_BG);
+        scrollPane.setBorder(BorderFactory.createLineBorder(ACCENT_COLOR, 1));
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
@@ -742,22 +841,24 @@ public class MainWindow extends JFrame implements ActionListener {
 
     private JPanel createStatsPanel(int activeCount, int deletedCount) {
         JPanel statsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        statsPanel.setBackground(new Color(240, 240, 240));
-        statsPanel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 0));
+        statsPanel.setBackground(DARKER_BG);
+        statsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        // Create statistics labels with custom styling
+        Font statsFont = new Font("Segoe UI", Font.BOLD, 12);
+
+        // Create statistics labels with dark theme
         JLabel activeLabel = new JLabel(String.format("Active Customers: %d", activeCount));
         JLabel deletedLabel = new JLabel(String.format("Deleted Customers: %d", deletedCount));
         JLabel totalLabel = new JLabel(String.format("Total Customers: %d", activeCount + deletedCount));
 
-        Font statsFont = new Font("Segoe UI", Font.BOLD, 12);
+        // Style labels
         activeLabel.setFont(statsFont);
         deletedLabel.setFont(statsFont);
         totalLabel.setFont(statsFont);
 
-        activeLabel.setForeground(new Color(46, 125, 50));
-        deletedLabel.setForeground(new Color(198, 40, 40));
-        totalLabel.setForeground(new Color(13, 71, 161));
+        activeLabel.setForeground(SUCCESS_COLOR);
+        deletedLabel.setForeground(ERROR_COLOR);
+        totalLabel.setForeground(TEXT_COLOR);
 
         statsPanel.add(activeLabel);
         statsPanel.add(new JSeparator(JSeparator.VERTICAL));

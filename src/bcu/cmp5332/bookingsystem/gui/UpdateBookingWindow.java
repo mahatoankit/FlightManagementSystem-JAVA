@@ -8,25 +8,22 @@ import java.awt.event.*;
 
 /**
  * Provides a window interface for updating existing flight bookings in the system.
- * This class extends JFrame and implements ActionListener to handle user interactions.
- * 
- * @author Flight Booking System Team
- * @version 1.0
+ * Features a modern dark theme and minimalist design.
  */
 public class UpdateBookingWindow extends JFrame implements ActionListener {
 
-    /** Reference to the main window */
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+
     private MainWindow mw;
-    /** Text field for booking ID input */
-    private JTextField bookingIdField = new JTextField(10);
-    /** Text field for new flight ID input */
-    private JTextField newFlightIdField = new JTextField(10);
-    /** Button to trigger booking update */
-    private JButton updateBtn = new JButton("Update Booking");
+    private JTextField bookingIdField;
+    private JTextField newFlightIdField;
+    private JButton updateBtn;
 
     /**
      * Constructs a new UpdateBookingWindow with a reference to the main window.
-     * 
      * @param mw The MainWindow instance that created this window
      */
     public UpdateBookingWindow(MainWindow mw) {
@@ -36,85 +33,114 @@ public class UpdateBookingWindow extends JFrame implements ActionListener {
 
     /**
      * Initializes the window components and sets up the GUI layout.
-     * Configures the look and feel, creates and positions all UI elements.
      */
     private void initialize() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
         setTitle("Update Booking");
-        setSize(350, 150);
-        setLayout(new BorderLayout());
+        setSize(400, 200);
+        setLayout(new BorderLayout(20, 20));
+        getContentPane().setBackground(DARK_BG);
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.setBackground(new Color(240, 240, 240));
+        // Initialize components
+        bookingIdField = createStyledTextField();
+        newFlightIdField = createStyledTextField();
+        updateBtn = createStyledButton("Update Booking");
 
-        panel.add(createStyledLabel("Booking ID:"));
-        panel.add(bookingIdField);
-        panel.add(createStyledLabel("New Flight ID:"));
-        panel.add(newFlightIdField);
-        panel.add(new JLabel(""));
-        panel.add(createStyledButton(updateBtn));
+        // Create main panel
+        JPanel mainPanel = new JPanel(new GridLayout(3, 2, 15, 15));
+        mainPanel.setBackground(DARK_BG);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
+        // Add components
+        mainPanel.add(createStyledLabel("Booking ID:"));
+        mainPanel.add(bookingIdField);
+        mainPanel.add(createStyledLabel("New Flight ID:"));
+        mainPanel.add(newFlightIdField);
+        mainPanel.add(new JLabel(""));
+        mainPanel.add(updateBtn);
+
+        // Add action listener
         updateBtn.addActionListener(this);
 
-        getContentPane().add(panel, BorderLayout.CENTER);
+        add(mainPanel, BorderLayout.CENTER);
         setLocationRelativeTo(mw);
         setVisible(true);
     }
 
     /**
-     * Creates a styled JLabel with consistent formatting.
-     * 
-     * @param text The text to display in the label
-     * @return A styled JLabel instance
+     * Creates a styled JTextField with dark theme.
+     * @return styled JTextField
      */
-    private JLabel createStyledLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        return label;
+    private JTextField createStyledTextField() {
+        JTextField field = new JTextField();
+        field.setBackground(DARKER_BG);
+        field.setForeground(TEXT_COLOR);
+        field.setCaretColor(TEXT_COLOR);
+        field.setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+            BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        return field;
     }
 
     /**
-     * Creates a styled JButton with consistent formatting and appearance.
-     * 
-     * @param button The JButton to style
-     * @return A styled JButton instance
+     * Creates a styled JButton with dark theme.
+     * @param text Button text
+     * @return styled JButton
      */
-    private JButton createStyledButton(JButton button) {
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        button.setBackground(new Color(0, 123, 255));
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setBackground(ACCENT_COLOR);
         button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setBorderPainted(false);
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
 
     /**
+     * Creates a styled JLabel with dark theme.
+     * @param text Label text
+     * @return styled JLabel
+     */
+    private JLabel createStyledLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setForeground(TEXT_COLOR);
+        label.setFont(new Font("Dialog", Font.PLAIN, 12));
+        return label;
+    }
+
+    /**
+     * Shows an error message dialog with dark theme styling.
+     * @param message The error message to display
+     */
+    private void showErrorMessage(String message) {
+        JOptionPane.showMessageDialog(this,
+                message,
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
      * Handles the action events for the update button.
-     * Validates input and executes the update booking command.
-     * Shows success message on successful update and error messages for any failures.
-     * 
      * @param e The ActionEvent triggered by the user
      */
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            int bookingId = Integer.parseInt(bookingIdField.getText());
-            int newFlightId = Integer.parseInt(newFlightIdField.getText());
+            int bookingId = Integer.parseInt(bookingIdField.getText().trim());
+            int newFlightId = Integer.parseInt(newFlightIdField.getText().trim());
             UpdateBooking updateCmd = new UpdateBooking(bookingId, newFlightId);
             updateCmd.execute(mw.getFlightBookingSystem());
-            JOptionPane.showMessageDialog(this, "Booking updated successfully.");
+            
+            JOptionPane.showMessageDialog(this,
+                    "Booking updated successfully",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
             mw.displayBookings();
-            this.dispose();
+            dispose();
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "Invalid input. Please check IDs.", "Error", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Invalid input. Please check IDs.");
         } catch (FlightBookingSystemException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            showErrorMessage(ex.getMessage());
         }
     }
 }

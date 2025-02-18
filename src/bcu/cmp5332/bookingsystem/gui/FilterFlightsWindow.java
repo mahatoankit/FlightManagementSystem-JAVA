@@ -34,6 +34,13 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
     /** Table to display filtered results */
     private JTable resultsTable;
 
+    // Add these color constants at the top of the class
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color INPUT_BG = new Color(69, 73, 74);
+
     /**
      * Constructs a new FilterFlightsWindow.
      * 
@@ -50,41 +57,53 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
      * and sets up the results table.
      */
     private void initialize() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
         setTitle("Filter Flights");
-        setSize(600, 400);
-        setLayout(new BorderLayout(5, 5));
+        setSize(800, 500);
+        setLayout(new BorderLayout(10, 10));
 
-        JPanel inputPanel = new JPanel(new GridLayout(3, 4, 10, 10));
-        inputPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        inputPanel.setBackground(new Color(240, 240, 240));
+        // Main panel with dark background
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(DARK_BG);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
-        inputPanel.add(createStyledLabel("Origin:"));
-        inputPanel.add(originField);
-        inputPanel.add(createStyledLabel("Destination:"));
-        inputPanel.add(destinationField);
-        inputPanel.add(createStyledLabel("Departure Date (YYYY-MM-DD):"));
-        inputPanel.add(depDateField);
-        inputPanel.add(createStyledLabel("Min Price:"));
-        inputPanel.add(minPriceField);
-        inputPanel.add(createStyledLabel("Max Price:"));
-        inputPanel.add(maxPriceField);
-        inputPanel.add(new JLabel(""));
-        inputPanel.add(createStyledButton(filterButton));
+        // Input panel with grid layout
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+        inputPanel.setBackground(DARKER_BG);
+        inputPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(15, 15, 15, 15)));
 
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Add components with proper spacing
+        addInputComponent(inputPanel, "Origin:", originField, 0, gbc);
+        addInputComponent(inputPanel, "Destination:", destinationField, 1, gbc);
+        addInputComponent(inputPanel, "Departure Date (YYYY-MM-DD):", depDateField, 2, gbc);
+        addInputComponent(inputPanel, "Min Price:", minPriceField, 3, gbc);
+        addInputComponent(inputPanel, "Max Price:", maxPriceField, 4, gbc);
+
+        // Style the filter button
+        filterButton = createStyledButton("Apply Filter");
         filterButton.addActionListener(this);
+        gbc.gridx = 0;
+        gbc.gridy = 5;
+        gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
+        inputPanel.add(filterButton, gbc);
 
-        resultsTable = new JTable();
+        // Create and style the results table
+        resultsTable = createStyledTable();
         JScrollPane scrollPane = new JScrollPane(resultsTable);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        scrollPane.setBackground(DARK_BG);
+        scrollPane.getViewport().setBackground(DARKER_BG);
+        scrollPane.setBorder(BorderFactory.createLineBorder(ACCENT_COLOR, 1));
 
-        add(inputPanel, BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(inputPanel, BorderLayout.NORTH);
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+
+        add(mainPanel);
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -146,7 +165,8 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
             try {
                 filterDate = LocalDate.parse(depDateStr);
             } catch (DateTimeParseException ex) {
-                JOptionPane.showMessageDialog(this, "Invalid departure date format", "Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, "Invalid departure date format", "Error",
+                        JOptionPane.ERROR_MESSAGE);
                 return;
             }
         }
@@ -195,7 +215,7 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
             }
         }
 
-        String[] columns = {"ID", "Flight Number", "Origin", "Destination", "Departure Date", "Dynamic Price"};
+        String[] columns = { "ID", "Flight Number", "Origin", "Destination", "Departure Date", "Dynamic Price" };
         Object[][] data = new Object[filtered.size()][6];
         for (int i = 0; i < filtered.size(); i++) {
             Flight f = filtered.get(i);
@@ -208,5 +228,93 @@ public class FilterFlightsWindow extends JFrame implements ActionListener {
         }
 
         resultsTable.setModel(new javax.swing.table.DefaultTableModel(data, columns));
+
+        // Apply consistent styling to the new data
+        resultsTable.setBackground(DARKER_BG);
+        resultsTable.setForeground(TEXT_COLOR);
+        resultsTable.getTableHeader().setBackground(DARKER_BG);
+        resultsTable.getTableHeader().setForeground(TEXT_COLOR);
+
+        // Add row striping for better readability
+        resultsTable.setDefaultRenderer(Object.class, new javax.swing.table.DefaultTableCellRenderer() {
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                    boolean isSelected, boolean hasFocus, int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value,
+                        isSelected, hasFocus, row, column);
+
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? DARKER_BG : DARK_BG);
+                    c.setForeground(TEXT_COLOR);
+                }
+
+                return c;
+            }
+        });
+    }
+
+    private void addInputComponent(JPanel panel, String labelText, JTextField field, int row, GridBagConstraints gbc) {
+        // Label
+        JLabel label = new JLabel(labelText);
+        label.setForeground(TEXT_COLOR);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.gridwidth = 1;
+        panel.add(label, gbc);
+
+        // Text field
+        styleTextField(field);
+        gbc.gridx = 1;
+        gbc.gridwidth = 1;
+        panel.add(field, gbc);
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setBackground(INPUT_BG);
+        field.setForeground(TEXT_COLOR);
+        field.setCaretColor(TEXT_COLOR);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBackground(ACCENT_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        // Add hover effect
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(ACCENT_COLOR.brighter());
+            }
+
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(ACCENT_COLOR);
+            }
+        });
+
+        return button;
+    }
+
+    private JTable createStyledTable() {
+        JTable table = new JTable();
+        table.setBackground(DARKER_BG);
+        table.setForeground(TEXT_COLOR);
+        table.setGridColor(DARK_BG);
+        table.setSelectionBackground(ACCENT_COLOR);
+        table.setSelectionForeground(Color.WHITE);
+        table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        table.getTableHeader().setBackground(DARKER_BG);
+        table.getTableHeader().setForeground(TEXT_COLOR);
+        table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+        table.setRowHeight(30);
+
+        return table;
     }
 }

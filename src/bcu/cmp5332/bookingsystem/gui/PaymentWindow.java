@@ -2,29 +2,29 @@ package bcu.cmp5332.bookingsystem.gui;
 
 import bcu.cmp5332.bookingsystem.model.Booking;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
 /**
  * Provides a dialog window for processing payments for flight bookings.
- * This class extends JDialog to create a modal payment processing interface.
- * 
- * @author Flight Booking System Team
- * @version 1.0
+ * Features a modern dark theme and minimalist design.
  */
 public class PaymentWindow extends JDialog {
     
-    /** Serial version UID for serialization */
     private static final long serialVersionUID = 1L;
-    /** Reference to the parent main window */
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color SUCCESS_COLOR = new Color(75, 175, 80);
+    
     private final MainWindow parentWindow;
-    /** The booking for which payment is being processed */
     private final Booking booking;
 
     /**
-     * Constructs a new PaymentWindow for processing a booking payment.
-     * 
+     * Constructs a new PaymentWindow with dark theme styling.
      * @param parent The parent MainWindow instance
-     * @param booking The Booking instance for which payment is to be processed
+     * @param booking The Booking instance for payment processing
      */
     public PaymentWindow(MainWindow parent, Booking booking) {
         super(parent, "Process Payment", true);
@@ -34,35 +34,39 @@ public class PaymentWindow extends JDialog {
     }
 
     /**
-     * Initializes the payment window components and sets up the GUI layout.
-     * Creates and positions all payment-related UI elements including
-     * booking details, payment method selection, and process button.
+     * Initializes the window components with dark theme styling.
      */
     private void initialize() {
-        setSize(400, 300);
+        setSize(450, 350);
         setLocationRelativeTo(getParent());
+        getContentPane().setBackground(DARK_BG);
 
         JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(DARK_BG);
+        mainPanel.setBorder(new EmptyBorder(20, 20, 20, 20));
+        
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
 
-        // Payment details
+        // Booking details with styled labels
         gbc.gridx = 0;
         gbc.gridy = 0;
-        mainPanel.add(new JLabel("Booking ID: " + booking.getId()), gbc);
+        mainPanel.add(createStyledLabel("Booking ID: " + booking.getId()), gbc);
 
         gbc.gridy = 1;
-        mainPanel.add(new JLabel("Amount to Pay: $" + booking.getBookingFee()), gbc);
+        mainPanel.add(createStyledLabel("Amount to Pay: $" + booking.getBookingFee()), gbc);
 
-        // Payment method selection
+        // Styled payment method selector
         gbc.gridy = 2;
         String[] paymentMethods = { "Credit Card", "Debit Card", "Bank Transfer" };
-        JComboBox<String> methodCombo = new JComboBox<>(paymentMethods);
+        JComboBox<String> methodCombo = createStyledComboBox(paymentMethods);
         mainPanel.add(methodCombo, gbc);
 
-        // Process button
+        // Styled process button
         gbc.gridy = 3;
-        JButton processButton = new JButton("Process Payment");
+        gbc.insets = new Insets(20, 10, 10, 10);
+        JButton processButton = createStyledButton("Process Payment");
         processButton.addActionListener(e -> processPayment());
         mainPanel.add(processButton, gbc);
 
@@ -71,25 +75,74 @@ public class PaymentWindow extends JDialog {
     }
 
     /**
-     * Processes the payment for the booking.
-     * Sets the booking's payment status to processed and shows appropriate
-     * success or error messages. Updates the parent window's booking display
-     * after successful payment processing.
+     * Creates a styled label with dark theme colors.
+     */
+    private JLabel createStyledLabel(String text) {
+        JLabel label = new JLabel(text);
+        label.setForeground(TEXT_COLOR);
+        label.setFont(new Font("Dialog", Font.PLAIN, 14));
+        return label;
+    }
+
+    /**
+     * Creates a styled combo box with dark theme colors.
+     */
+    private JComboBox<String> createStyledComboBox(String[] items) {
+        JComboBox<String> comboBox = new JComboBox<>(items);
+        comboBox.setBackground(DARKER_BG);
+        comboBox.setForeground(TEXT_COLOR);
+        comboBox.setBorder(BorderFactory.createLineBorder(ACCENT_COLOR));
+        ((JComponent) comboBox.getRenderer()).setBackground(DARKER_BG);
+        return comboBox;
+    }
+
+    /**
+     * Creates a styled button with dark theme colors.
+     */
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setBackground(ACCENT_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorderPainted(false);
+        button.setFont(new Font("Dialog", Font.BOLD, 14));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
+    }
+
+    /**
+     * Processes the payment with styled success/error messages.
      */
     private void processPayment() {
         try {
             booking.setPaymentProcessed(true);
-            JOptionPane.showMessageDialog(this,
-                    "Payment processed successfully!",
-                    "Success",
-                    JOptionPane.INFORMATION_MESSAGE);
+            showSuccessMessage("Payment processed successfully!");
             parentWindow.refreshBookingsDisplay();
             dispose();
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Error processing payment: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            showErrorMessage("Error processing payment: " + ex.getMessage());
         }
+    }
+
+    /**
+     * Shows a styled success message dialog.
+     */
+    private void showSuccessMessage(String message) {
+        UIManager.put("OptionPane.background", DARK_BG);
+        UIManager.put("Panel.background", DARK_BG);
+        UIManager.put("OptionPane.messageForeground", SUCCESS_COLOR);
+        JOptionPane.showMessageDialog(this, message, "Success", 
+                JOptionPane.INFORMATION_MESSAGE);
+    }
+
+    /**
+     * Shows a styled error message dialog.
+     */
+    private void showErrorMessage(String message) {
+        UIManager.put("OptionPane.background", DARK_BG);
+        UIManager.put("Panel.background", DARK_BG);
+        UIManager.put("OptionPane.messageForeground", Color.RED);
+        JOptionPane.showMessageDialog(this, message, "Error", 
+                JOptionPane.ERROR_MESSAGE);
     }
 }

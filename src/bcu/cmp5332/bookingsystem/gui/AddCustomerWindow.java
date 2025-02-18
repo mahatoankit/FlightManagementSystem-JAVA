@@ -9,6 +9,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 public class AddCustomerWindow extends JFrame implements ActionListener {
 
@@ -16,8 +18,17 @@ public class AddCustomerWindow extends JFrame implements ActionListener {
     private final JTextField nameField = new JTextField();
     private final JTextField phoneField = new JTextField();
     private final JTextField emailField = new JTextField();
-    private final JButton addBtn = new JButton("Add");
-    private final JButton cancelBtn = new JButton("Cancel");
+    private JButton addBtn = new JButton("Add");
+    private JButton cancelBtn = new JButton("Cancel");
+
+    // Add color constants
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color INPUT_BG = new Color(69, 73, 74);
+    private static final Color SUCCESS_COLOR = new Color(75, 175, 80);
+    private static final Color ERROR_COLOR = new Color(255, 87, 34);
 
     public AddCustomerWindow(MainWindow mw) {
         this.mw = mw;
@@ -30,61 +41,105 @@ public class AddCustomerWindow extends JFrame implements ActionListener {
         setSize(400, 400);
         setLocationRelativeTo(mw);
 
-        JPanel mainPanel = new JPanel(new BorderLayout());
+        // Main panel with dark background
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.setBackground(DARK_BG);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+
+        // Form panel with styled background
         JPanel formPanel = new JPanel(new GridBagLayout());
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        formPanel.setBackground(DARKER_BG);
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)));
+
+        // Add title label
+        JLabel titleLabel = new JLabel("Add New Customer");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setForeground(TEXT_COLOR);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        mainPanel.add(titleLabel, BorderLayout.NORTH);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridwidth = 1;
         gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.insets = new Insets(8, 8, 8, 8);
 
-        // Name field
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        formPanel.add(new JLabel("Name:"), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        formPanel.add(nameField, gbc);
+        // Style and add form fields
+        // Set preferred size for text fields to make them wider
+        nameField.setPreferredSize(new Dimension(200, 35));
+        phoneField.setPreferredSize(new Dimension(200, 35));
+        emailField.setPreferredSize(new Dimension(200, 35));
 
-        // Phone field
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        gbc.weightx = 0.0;
-        formPanel.add(new JLabel("Phone:"), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        formPanel.add(phoneField, gbc);
+        addFormField(formPanel, "Name:", nameField, 0, gbc);
+        addFormField(formPanel, "Phone:", phoneField, 1, gbc);
+        addFormField(formPanel, "Email:", emailField, 2, gbc);
 
-        // Email field
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.weightx = 0.0;
-        formPanel.add(new JLabel("Email:"), gbc);
-        gbc.gridx = 1;
-        gbc.weightx = 1.0;
-        formPanel.add(emailField, gbc);
+        // Button panel with dark background
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 15, 10));
+        buttonPanel.setBackground(DARKER_BG);
 
         // Style buttons
-        addBtn.setBackground(new Color(46, 125, 50));
-        addBtn.setForeground(Color.WHITE);
-        cancelBtn.setBackground(new Color(198, 40, 40));
-        cancelBtn.setForeground(Color.WHITE);
+        addBtn = createStyledButton("Add", SUCCESS_COLOR);
+        cancelBtn = createStyledButton("Cancel", ERROR_COLOR);
 
-        // Add action listeners
-        addBtn.addActionListener(this);
-        cancelBtn.addActionListener(this);
-
-        // Add buttons to panel
         buttonPanel.add(addBtn);
         buttonPanel.add(cancelBtn);
 
-        // Combine panels
         mainPanel.add(formPanel, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         setContentPane(mainPanel);
         setVisible(true);
+    }
+
+    private void addFormField(JPanel panel, String labelText, JTextField field, int row, GridBagConstraints gbc) {
+        // Label
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        label.setForeground(TEXT_COLOR);
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.0;
+        panel.add(label, gbc);
+
+        // Text field
+        styleTextField(field);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        panel.add(field, gbc);
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setBackground(INPUT_BG);
+        field.setForeground(TEXT_COLOR);
+        field.setCaretColor(TEXT_COLOR);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    }
+
+    private JButton createStyledButton(String text, Color baseColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBackground(baseColor);
+        button.setForeground(Color.WHITE);
+        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+
+        // Add hover effect
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(baseColor.brighter());
+            }
+
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(baseColor);
+            }
+        });
+
+        button.addActionListener(this);
+        return button;
     }
 
     @Override

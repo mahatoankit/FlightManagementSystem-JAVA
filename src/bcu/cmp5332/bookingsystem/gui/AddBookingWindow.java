@@ -9,10 +9,17 @@ import java.awt.event.*;
 import java.time.LocalDate;
 
 public class AddBookingWindow extends JFrame implements ActionListener {
+    // Add color constants
+    private static final Color DARK_BG = new Color(43, 43, 43);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color INPUT_BG = new Color(69, 73, 74);
+    private static final Color SUCCESS_COLOR = new Color(75, 175, 80);
 
     private MainWindow mw;
-    private JTextField custIdField = new JTextField(10);
-    private JTextField flightIdField = new JTextField(10);
+    private JTextField custIdField;
+    private JTextField flightIdField;
     private JLabel feeLabel = new JLabel("Booking Fee: $0.00");
     private JButton computeFeeButton = new JButton("Compute Fee");
     private JButton bookButton = new JButton("Book Flight");
@@ -25,132 +32,143 @@ public class AddBookingWindow extends JFrame implements ActionListener {
     }
 
     private void initialize() {
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
 
-        setTitle("Create New Booking");
-        setSize(400, 300);
+        // Title label
+        JLabel titleLabel = new JLabel("Add New Booking");
+        titleLabel.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        titleLabel.setForeground(TEXT_COLOR);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        custIdField = new JTextField();
+        flightIdField = new JTextField();
+
+        setTitle("Add sffsdNew Booking");
+        setSize(500, 450); // increased from 450 to 500
         setLayout(new BorderLayout(10, 10));
 
-        // Style constants
-        Color primaryColor = new Color(63, 81, 181);
-        Color accentColor = new Color(255, 64, 129);
-        Color backgroundColor = new Color(250, 250, 250);
+        // Main panel with dark background
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(DARK_BG);
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Main panel with shadow border
-        JPanel mainPanel = new JPanel(new GridBagLayout()) {
-            @Override
-            protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
-                Graphics2D g2d = (Graphics2D) g;
-                g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2d.setColor(new Color(0, 0, 0, 20));
-                g2d.fillRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 15, 15);
-            }
-        };
-        mainPanel.setBackground(backgroundColor);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 25, 20, 25));
+        // Form panel
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        formPanel.setBackground(DARKER_BG);
+        formPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)));
 
-        // Style text fields
-        styleTextField(custIdField);
-        styleTextField(flightIdField);
+        
 
-        // Style buttons with gradient
-        styleGradientButton(computeFeeButton, primaryColor, accentColor);
-        styleGradientButton(bookButton, primaryColor, accentColor);
+        // Set preferred size for fields
+        Dimension fieldSize = new Dimension(250, 35);
+        custIdField.setPreferredSize(fieldSize);
+        flightIdField.setPreferredSize(fieldSize);
+
+        // Update GridBagConstraints for better field sizing
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 8, 8, 8);
+        gbc.weightx = 1.0; // Give weight to allow horizontal expansion
+
+        // Add components
+        addFormField(formPanel, "Customer ID:", custIdField, 0, gbc);
+        addFormField(formPanel, "Flight ID:", flightIdField, 1, gbc);
 
         // Style fee label
         feeLabel.setFont(new Font("Segoe UI", Font.BOLD, 16));
-        feeLabel.setForeground(primaryColor);
+        feeLabel.setForeground(TEXT_COLOR);
+        feeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.insets = new Insets(5, 5, 5, 5);
+        // Style buttons
+        computeFeeButton = createStyledButton("Compute Fee", ACCENT_COLOR);
+        bookButton = createStyledButton("Book Flight", SUCCESS_COLOR);
 
-        // Add components with proper spacing
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        mainPanel.add(new JLabel("Customer ID:"), gbc);
-        gbc.gridx = 1;
-        mainPanel.add(custIdField, gbc);
-
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        mainPanel.add(new JLabel("Flight ID:"), gbc);
-        gbc.gridx = 1;
-        mainPanel.add(flightIdField, gbc);
-
-        gbc.gridx = 0;
+        // Add components to form panel
         gbc.gridy = 2;
         gbc.gridwidth = 2;
-        mainPanel.add(computeFeeButton, gbc);
+        formPanel.add(computeFeeButton, gbc);
 
         gbc.gridy = 3;
-        mainPanel.add(feeLabel, gbc);
+        formPanel.add(feeLabel, gbc);
 
         gbc.gridy = 4;
-        mainPanel.add(bookButton, gbc);
+        formPanel.add(bookButton, gbc);
 
-        // If a customer is logged in, preselect their ID and disable editing
+        // If customer is logged in
         if (mw.getLoggedInCustomerId() != null) {
             custIdField.setText(String.valueOf(mw.getLoggedInCustomerId()));
             custIdField.setEditable(false);
         }
 
+        // Add action listeners
         computeFeeButton.addActionListener(this);
         bookButton.addActionListener(this);
 
-        // Add hover effects
-        addButtonHoverEffect(computeFeeButton);
-        addButtonHoverEffect(bookButton);
+        // Layout
+        mainPanel.add(titleLabel, gbc);
+        gbc.gridy = 1;
+        mainPanel.add(formPanel, gbc);
 
-        add(mainPanel, BorderLayout.CENTER);
+        add(mainPanel);
         setLocationRelativeTo(mw);
         setResizable(false);
         setVisible(true);
     }
 
-    private void styleTextField(JTextField field) {
-        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        field.setBackground(Color.WHITE);
-        field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(63, 81, 181, 100), 1),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+    private void addFormField(JPanel panel, String labelText, JTextField field, int row, GridBagConstraints gbc) {
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        label.setForeground(TEXT_COLOR);
+
+        // Label constraints
+        GridBagConstraints labelGbc = (GridBagConstraints) gbc.clone();
+        labelGbc.gridx = 0;
+        labelGbc.gridy = row;
+        labelGbc.gridwidth = 1;
+        labelGbc.weightx = 0.2; // Give less weight to label
+        panel.add(label, labelGbc);
+
+        // Field constraints
+        GridBagConstraints fieldGbc = (GridBagConstraints) gbc.clone();
+        fieldGbc.gridx = 1;
+        fieldGbc.gridy = row;
+        fieldGbc.gridwidth = 1;
+        fieldGbc.weightx = 0.8; // Give more weight to field
+
+        styleTextField(field);
+        panel.add(field, fieldGbc);
     }
 
-    private void styleGradientButton(JButton button, Color startColor, Color endColor) {
-        button.setContentAreaFilled(false);
+    private void styleTextField(JTextField field) {
+        field.setBackground(INPUT_BG);
+        field.setForeground(TEXT_COLOR);
+        field.setCaretColor(TEXT_COLOR);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(8, 8, 8, 8)));
+        field.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+    }
+
+    private JButton createStyledButton(String text, Color baseColor) {
+        JButton button = new JButton(text);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBackground(baseColor);
+        button.setForeground(Color.WHITE);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setForeground(Color.WHITE);
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
-        button.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(endColor);
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(startColor);
-            }
-        });
-    }
-
-    private void addButtonHoverEffect(JButton button) {
+        // Add hover effect
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
-                button.setBackground(button.getBackground().brighter());
+                button.setBackground(baseColor.brighter());
             }
 
             public void mouseExited(MouseEvent e) {
-                button.setBackground(button.getBackground().darker());
+                button.setBackground(baseColor);
             }
         });
+
+        return button;
     }
 
     @Override

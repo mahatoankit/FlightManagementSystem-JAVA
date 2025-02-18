@@ -11,104 +11,83 @@ public class LoginWindow extends JFrame implements ActionListener {
 
     private static final long serialVersionUID = 1L;
     private final FlightBookingSystem fbs;
-    private JTextField userIdField;
-    private JPasswordField passwordField;
+    private JTextField userIdField = new JTextField(15); // Initialize with column width
+    private JPasswordField passwordField = new JPasswordField(15); // Initialize with column width
 
-    // Custom colors for dark theme
+    // Update the color constants
     private static final Color BACKGROUND_COLOR = new Color(43, 43, 43);
-    private static final Color FOREGROUND_COLOR = new Color(255, 255, 255);
-    private static final Color BUTTON_COLOR = new Color(75, 110, 175);
-    private static final Color FIELD_BACKGROUND = new Color(60, 63, 65);
+    private static final Color DARKER_BG = new Color(60, 63, 65);
+    private static final Color TEXT_COLOR = new Color(187, 187, 187);
+    private static final Color ACCENT_COLOR = new Color(75, 110, 175);
+    private static final Color INPUT_BG = new Color(69, 73, 74);
     private static final Color BORDER_COLOR = new Color(100, 100, 100);
-    private static final Font MAIN_FONT = new Font("Segoe UI", Font.PLAIN, 14);
-
-    private static final Color PRIMARY_COLOR = new Color(63, 81, 181);
-    private static final Color ACCENT_COLOR = new Color(255, 64, 129);
+    private static final Color GRADIENT_START = new Color(75, 110, 175, 40);
+    private static final Color GRADIENT_END = new Color(255, 64, 129, 30);
+    private static final Color ERROR_COLOR = new Color(255, 87, 34);
+    // Update fonts
     private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 28);
-    private static final Font INPUT_FONT = new Font("Segoe UI", Font.PLAIN, 14);
+    private static final Font MAIN_FONT = new Font("Segoe UI", Font.PLAIN, 14);
+    private static final Font BUTTON_FONT = new Font("Segoe UI", Font.BOLD, 14);
 
     public LoginWindow(FlightBookingSystem fbs) {
         this.fbs = fbs;
         initialize();
     }
 
+    // Update the initialize method with new panel styling
     private void initialize() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-
-            // Set global UI properties
-            UIManager.put("Panel.background", BACKGROUND_COLOR);
-            UIManager.put("TextField.background", FIELD_BACKGROUND);
-            UIManager.put("PasswordField.background", FIELD_BACKGROUND);
-            UIManager.put("TextField.foreground", FOREGROUND_COLOR);
-            UIManager.put("PasswordField.foreground", FOREGROUND_COLOR);
-            UIManager.put("Label.foreground", FOREGROUND_COLOR);
-            UIManager.put("Button.font", MAIN_FONT);
-            UIManager.put("Label.font", MAIN_FONT);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
         setTitle("Flight Booking System - Login");
+
         setSize(500, 400);
         setLayout(new BorderLayout(20, 20));
         getContentPane().setBackground(BACKGROUND_COLOR);
+        getContentPane().setForeground(TEXT_COLOR); // Set the text color
+        UIManager.put("TitledBorder.titleColor", TEXT_COLOR); // Change the color of the title
 
-        // Title Panel
-        JPanel titlePanel = new JPanel();
-        titlePanel.setBackground(BACKGROUND_COLOR);
-        JLabel titleLabel = new JLabel("Flight Booking System", SwingConstants.CENTER);
-        titleLabel.setFont(TITLE_FONT);
-        titleLabel.setForeground(FOREGROUND_COLOR);
-        titlePanel.add(titleLabel);
-
-        // Main Panel
-        JPanel mainPanel = new JPanel(new GridBagLayout()) {
+        // Title Panel with gradient
+        JPanel titlePanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 Graphics2D g2d = (Graphics2D) g;
                 g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-                int w = getWidth(), h = getHeight();
-                GradientPaint gp = new GradientPaint(0, 0, new Color(63, 81, 181, 50),
-                        w, h, new Color(255, 64, 129, 30));
+                GradientPaint gp = new GradientPaint(0, 0, GRADIENT_START, getWidth(), 0, GRADIENT_END);
                 g2d.setPaint(gp);
-                g2d.fillRect(0, 0, w, h);
+                g2d.fillRect(0, 0, getWidth(), getHeight());
             }
         };
-        mainPanel.setBackground(BACKGROUND_COLOR);
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
+        titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
+        titlePanel.setBackground(DARKER_BG); // Set background color to dark
+
+        JLabel titleLabel = new JLabel("BCU Airlines");
+        titleLabel.setFont(TITLE_FONT);
+        titleLabel.setForeground(TEXT_COLOR);
+        titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        titlePanel.add(titleLabel);
+
+
+        // Main login panel
+        JPanel mainPanel = new JPanel(new GridBagLayout());
+        mainPanel.setBackground(DARKER_BG);
+        mainPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(30, 40, 30, 40)));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10);
 
-        // User ID field with styling
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        JLabel userLabel = createStyledLabel("User ID:");
-        mainPanel.add(userLabel, gbc);
+        // Add form components
+        addFormField(mainPanel, "User ID:", userIdField, 0, gbc);
+        addFormField(mainPanel, "Password:", passwordField, 1, gbc);
 
-        gbc.gridx = 1;
-        userIdField = createStyledTextField();
-        mainPanel.add(userIdField, gbc);
+        // Buttons panel
+        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 0));
+        buttonsPanel.setBackground(DARKER_BG);
+        buttonsPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
 
-        // Password field with styling
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        JLabel passLabel = createStyledLabel("Password:");
-        mainPanel.add(passLabel, gbc);
-
-        gbc.gridx = 1;
-        passwordField = createStyledPasswordField();
-        mainPanel.add(passwordField, gbc);
-
-        // Buttons Panel
-        JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
-        buttonsPanel.setBackground(BACKGROUND_COLOR);
-
-        JButton loginButton = createStyledButton("Login");
-        JButton adminButton = createStyledButton("Admin Login");
+        JButton loginButton = createStyledButton("Login", ACCENT_COLOR);
+        JButton adminButton = createStyledButton("Admin Login", ACCENT_COLOR.darker());
 
         loginButton.addActionListener(this);
         adminButton.addActionListener(e -> adminLogin());
@@ -116,94 +95,64 @@ public class LoginWindow extends JFrame implements ActionListener {
         buttonsPanel.add(loginButton);
         buttonsPanel.add(adminButton);
 
-        // Add all panels to frame
+        // Add panels to frame
         add(titlePanel, BorderLayout.NORTH);
         add(mainPanel, BorderLayout.CENTER);
         add(buttonsPanel, BorderLayout.SOUTH);
 
-        // Center on screen
         setLocationRelativeTo(null);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setResizable(false);
         setVisible(true);
     }
 
-    private JLabel createStyledLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setForeground(FOREGROUND_COLOR);
+    // Add new helper methods
+    private void addFormField(JPanel panel, String labelText, JTextField field, int row, GridBagConstraints gbc) {
+        JLabel label = new JLabel(labelText);
         label.setFont(MAIN_FONT);
-        return label;
+        label.setForeground(TEXT_COLOR);
+
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        gbc.weightx = 0.3;
+        panel.add(label, gbc);
+
+        styleTextField(field);
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        panel.add(field, gbc);
     }
 
-    private JTextField createStyledTextField() {
-        JTextField field = new JTextField(15);
-        field.setBackground(FIELD_BACKGROUND);
-        field.setForeground(FOREGROUND_COLOR);
+    private void styleTextField(JTextField field) {
+        field.setPreferredSize(new Dimension(200, 35));
+        field.setBackground(INPUT_BG);
+        field.setForeground(TEXT_COLOR);
+        field.setCaretColor(TEXT_COLOR);
         field.setFont(MAIN_FONT);
-        field.setCaretColor(FOREGROUND_COLOR);
-        Border lineBorder = BorderFactory.createLineBorder(BORDER_COLOR);
-        Border paddingBorder = BorderFactory.createEmptyBorder(5, 8, 5, 8);
-        field.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
-        return field;
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(5, 10, 5, 10)));
     }
 
-    private JPasswordField createStyledPasswordField() {
-        JPasswordField field = new JPasswordField(15);
-        field.setBackground(FIELD_BACKGROUND);
-        field.setForeground(FOREGROUND_COLOR);
-        field.setFont(MAIN_FONT);
-        field.setCaretColor(FOREGROUND_COLOR);
-        Border lineBorder = BorderFactory.createLineBorder(BORDER_COLOR);
-        Border paddingBorder = BorderFactory.createEmptyBorder(5, 8, 5, 8);
-        field.setBorder(BorderFactory.createCompoundBorder(lineBorder, paddingBorder));
-        return field;
-    }
-
-    private JButton createStyledButton(String text) {
+    private JButton createStyledButton(String text, Color baseColor) {
         JButton button = new JButton(text);
-        button.setBackground(BUTTON_COLOR);
-        button.setForeground(FOREGROUND_COLOR);
-        button.setFont(MAIN_FONT);
+        button.setFont(BUTTON_FONT);
+        button.setBackground(baseColor);
+        button.setForeground(TEXT_COLOR);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
 
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR.brighter());
+                button.setBackground(baseColor.brighter());
             }
 
             public void mouseExited(MouseEvent e) {
-                button.setBackground(BUTTON_COLOR);
+                button.setBackground(baseColor);
             }
         });
 
         return button;
-    }
-
-    private void styleTextField(JTextField field) {
-        field.setFont(INPUT_FONT);
-        field.setBackground(Color.WHITE);
-        field.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(PRIMARY_COLOR, 1),
-                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
-    }
-
-    private void styleButton(JButton button) {
-        button.setFont(INPUT_FONT);
-        button.setBackground(PRIMARY_COLOR);
-        button.setForeground(Color.WHITE);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
-
-        button.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent e) {
-                button.setBackground(ACCENT_COLOR);
-            }
-
-            public void mouseExited(MouseEvent e) {
-                button.setBackground(PRIMARY_COLOR);
-            }
-        });
     }
 
     @Override
@@ -243,16 +192,22 @@ public class LoginWindow extends JFrame implements ActionListener {
 
         // Create password panel
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(BACKGROUND_COLOR);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(DARKER_BG);
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(ACCENT_COLOR, 1),
+                BorderFactory.createEmptyBorder(20, 20, 20, 20)));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
 
         // Add password label and field
-        JLabel passLabel = createStyledLabel("Admin Password:");
-        JPasswordField passField = createStyledPasswordField();
+        JLabel passLabel = new JLabel("Admin Password:");
+        passLabel.setFont(MAIN_FONT);
+        passLabel.setForeground(TEXT_COLOR);
+
+        JPasswordField passField = new JPasswordField(20);
+        styleTextField(passField);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -264,11 +219,12 @@ public class LoginWindow extends JFrame implements ActionListener {
 
         // Create buttons panel
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        buttonPanel.setBackground(BACKGROUND_COLOR);
-        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+        buttonPanel.setBackground(DARKER_BG);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(15, 0, 15, 0));
 
-        JButton loginBtn = createStyledButton("Login");
-        JButton cancelBtn = createStyledButton("Cancel");
+        // Create styled buttons with appropriate colors
+        JButton loginBtn = createStyledButton("Login", ACCENT_COLOR);
+        JButton cancelBtn = createStyledButton("Cancel", ERROR_COLOR);
 
         // Add action listeners
         loginBtn.addActionListener(e -> {
