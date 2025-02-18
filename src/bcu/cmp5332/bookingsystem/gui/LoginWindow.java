@@ -21,7 +21,11 @@ public class LoginWindow extends JFrame implements ActionListener {
     private static final Color FIELD_BACKGROUND = new Color(60, 63, 65);
     private static final Color BORDER_COLOR = new Color(100, 100, 100);
     private static final Font MAIN_FONT = new Font("Segoe UI", Font.PLAIN, 14);
-    private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 24);
+
+    private static final Color PRIMARY_COLOR = new Color(63, 81, 181);
+    private static final Color ACCENT_COLOR = new Color(255, 64, 129);
+    private static final Font TITLE_FONT = new Font("Segoe UI", Font.BOLD, 28);
+    private static final Font INPUT_FONT = new Font("Segoe UI", Font.PLAIN, 14);
 
     public LoginWindow(FlightBookingSystem fbs) {
         this.fbs = fbs;
@@ -31,7 +35,7 @@ public class LoginWindow extends JFrame implements ActionListener {
     private void initialize() {
         try {
             UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-            
+
             // Set global UI properties
             UIManager.put("Panel.background", BACKGROUND_COLOR);
             UIManager.put("TextField.background", FIELD_BACKGROUND);
@@ -59,10 +63,22 @@ public class LoginWindow extends JFrame implements ActionListener {
         titlePanel.add(titleLabel);
 
         // Main Panel
-        JPanel mainPanel = new JPanel(new GridBagLayout());
+        JPanel mainPanel = new JPanel(new GridBagLayout()) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                Graphics2D g2d = (Graphics2D) g;
+                g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+                int w = getWidth(), h = getHeight();
+                GradientPaint gp = new GradientPaint(0, 0, new Color(63, 81, 181, 50),
+                        w, h, new Color(255, 64, 129, 30));
+                g2d.setPaint(gp);
+                g2d.fillRect(0, 0, w, h);
+            }
+        };
         mainPanel.setBackground(BACKGROUND_COLOR);
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
-        
+
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(10, 10, 10, 10);
         gbc.fill = GridBagConstraints.HORIZONTAL;
@@ -90,10 +106,10 @@ public class LoginWindow extends JFrame implements ActionListener {
         // Buttons Panel
         JPanel buttonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 10));
         buttonsPanel.setBackground(BACKGROUND_COLOR);
-        
+
         JButton loginButton = createStyledButton("Login");
         JButton adminButton = createStyledButton("Admin Login");
-        
+
         loginButton.addActionListener(this);
         adminButton.addActionListener(e -> adminLogin());
 
@@ -150,17 +166,44 @@ public class LoginWindow extends JFrame implements ActionListener {
         button.setFont(MAIN_FONT);
         button.setFocusPainted(false);
         button.setBorder(BorderFactory.createEmptyBorder(10, 25, 10, 25));
-        
+
         button.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent e) {
                 button.setBackground(BUTTON_COLOR.brighter());
             }
+
             public void mouseExited(MouseEvent e) {
                 button.setBackground(BUTTON_COLOR);
             }
         });
-        
+
         return button;
+    }
+
+    private void styleTextField(JTextField field) {
+        field.setFont(INPUT_FONT);
+        field.setBackground(Color.WHITE);
+        field.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(PRIMARY_COLOR, 1),
+                BorderFactory.createEmptyBorder(8, 10, 8, 10)));
+    }
+
+    private void styleButton(JButton button) {
+        button.setFont(INPUT_FONT);
+        button.setBackground(PRIMARY_COLOR);
+        button.setForeground(Color.WHITE);
+        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+
+        button.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent e) {
+                button.setBackground(ACCENT_COLOR);
+            }
+
+            public void mouseExited(MouseEvent e) {
+                button.setBackground(PRIMARY_COLOR);
+            }
+        });
     }
 
     @Override
@@ -188,82 +231,84 @@ public class LoginWindow extends JFrame implements ActionListener {
      * the admin mode is enabled in the main window and the login window is
      * disposed. If the password is incorrect, an error message is displayed.
      */
-/**
- * Creates and shows a styled admin login dialog with password field.
- * Matches the dark theme of the main window.
- */
-private void adminLogin() {
-    // Create custom dialog
-    JDialog dialog = new JDialog(this, "Admin Login", true);
-    dialog.setLayout(new BorderLayout(10, 10));
-    dialog.getContentPane().setBackground(BACKGROUND_COLOR);
-    
-    // Create password panel
-    JPanel panel = new JPanel(new GridBagLayout());
-    panel.setBackground(BACKGROUND_COLOR);
-    panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-    
-    GridBagConstraints gbc = new GridBagConstraints();
-    gbc.insets = new Insets(5, 5, 5, 5);
-    gbc.fill = GridBagConstraints.HORIZONTAL;
-    
-    // Add password label and field
-    JLabel passLabel = createStyledLabel("Admin Password:");
-    JPasswordField passField = createStyledPasswordField();
-    
-    gbc.gridx = 0;
-    gbc.gridy = 0;
-    panel.add(passLabel, gbc);
-    
-    gbc.gridx = 0;
-    gbc.gridy = 1;
-    panel.add(passField, gbc);
-    
-    // Create buttons panel
-    JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-    buttonPanel.setBackground(BACKGROUND_COLOR);
-    buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
-    
-    JButton loginBtn = createStyledButton("Login");
-    JButton cancelBtn = createStyledButton("Cancel");
-    
-    // Add action listeners
-    loginBtn.addActionListener(e -> {
-        String password = new String(passField.getPassword());
-        if (password.equals("admin")) {
-            MainWindow mainWindow = new MainWindow(fbs);
-            mainWindow.setAdminMode(true);
-            dispose();
-            dialog.dispose();
-        } else {
-            showErrorMessage("Invalid admin password", "Login Error");
-        }
-    });
-    
-    cancelBtn.addActionListener(e -> dialog.dispose());
-    
-    // Add buttons to panel
-    buttonPanel.add(loginBtn);
-    buttonPanel.add(cancelBtn);
-    
-    // Add components to dialog
-    dialog.add(panel, BorderLayout.CENTER);
-    dialog.add(buttonPanel, BorderLayout.SOUTH);
-    
-    // Configure dialog properties
-    dialog.setSize(350, 200);
-    dialog.setLocationRelativeTo(this);
-    dialog.setResizable(false);
-    
-    // Handle ENTER key in password field
-    passField.addActionListener(e -> loginBtn.doClick());
-    
-    dialog.setVisible(true);
-}
+    /**
+     * Creates and shows a styled admin login dialog with password field.
+     * Matches the dark theme of the main window.
+     */
+    private void adminLogin() {
+        // Create custom dialog
+        JDialog dialog = new JDialog(this, "Admin Login", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        dialog.getContentPane().setBackground(BACKGROUND_COLOR);
+
+        // Create password panel
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(BACKGROUND_COLOR);
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        // Add password label and field
+        JLabel passLabel = createStyledLabel("Admin Password:");
+        JPasswordField passField = createStyledPasswordField();
+
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        panel.add(passLabel, gbc);
+
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        panel.add(passField, gbc);
+
+        // Create buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        buttonPanel.setBackground(BACKGROUND_COLOR);
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 15, 0));
+
+        JButton loginBtn = createStyledButton("Login");
+        JButton cancelBtn = createStyledButton("Cancel");
+
+        // Add action listeners
+        loginBtn.addActionListener(e -> {
+            String password = new String(passField.getPassword());
+            if (password.equals("admin")) {
+                MainWindow mainWindow = new MainWindow(fbs);
+                mainWindow.setAdminMode(true);
+                dispose();
+                dialog.dispose();
+            } else {
+                showErrorMessage("Invalid admin password", "Login Error");
+            }
+        });
+
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        // Add buttons to panel
+        buttonPanel.add(loginBtn);
+        buttonPanel.add(cancelBtn);
+
+        // Add components to dialog
+        dialog.add(panel, BorderLayout.CENTER);
+        dialog.add(buttonPanel, BorderLayout.SOUTH);
+
+        // Configure dialog properties
+        dialog.setSize(350, 200);
+        dialog.setLocationRelativeTo(this);
+        dialog.setResizable(false);
+
+        // Handle ENTER key in password field
+        passField.addActionListener(e -> loginBtn.doClick());
+
+        dialog.setVisible(true);
+    }
+
     /**
      * Displays an error message dialog with the given message and title.
+     * 
      * @param message the error message to display
-     * @param title the title of the dialog
+     * @param title   the title of the dialog
      */
     private void showErrorMessage(String message, String title) {
         JOptionPane.showMessageDialog(this,

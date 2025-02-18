@@ -13,9 +13,17 @@ public class CancelBookingWindow extends JFrame implements ActionListener {
     private MainWindow mw;
     private JTextField bookingIdField = new JTextField(10);
     private JButton cancelBtn = new JButton("Cancel Booking");
+    private final Integer customerId;
 
     public CancelBookingWindow(MainWindow mw) {
         this.mw = mw;
+        this.customerId = null;
+        initialize();
+    }
+
+    public CancelBookingWindow(MainWindow mw, Integer customerId) {
+        this.mw = mw;
+        this.customerId = customerId;
         initialize();
     }
 
@@ -68,6 +76,11 @@ public class CancelBookingWindow extends JFrame implements ActionListener {
             try {
                 int bookingId = Integer.parseInt(bookingIdField.getText().trim());
                 Booking booking = mw.getFlightBookingSystem().getBookingByID(bookingId);
+
+                if (customerId != null && booking.getCustomer().getId() != customerId) {
+                    throw new FlightBookingSystemException("You can only cancel your own bookings.");
+                }
+
                 double cancellationFee = 0.15 * booking.getBookingFee();
                 int confirm = JOptionPane.showConfirmDialog(this,
                         "A cancellation fee of $" + String.format("%.2f", cancellationFee)

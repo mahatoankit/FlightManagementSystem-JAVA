@@ -14,6 +14,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
@@ -45,18 +46,39 @@ public class MainWindow extends JFrame implements ActionListener {
             Font menuFont = new Font("Segoe UI", Font.PLAIN, 14);
             Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
 
-            // Set default fonts
+            // Modern color scheme
+            Color primaryColor = new Color(63, 81, 181); // Material Indigo
+            Color accentColor = new Color(255, 64, 129); // Material Pink
+            Color backgroundColor = new Color(250, 250, 250);
+
+            // Set UI properties
             UIManager.put("Menu.font", menuFont);
             UIManager.put("MenuItem.font", menuFont);
             UIManager.put("Table.font", tableFont);
             UIManager.put("Label.font", menuFont);
             UIManager.put("Button.font", menuFont);
 
-            // Set other UI properties
-            UIManager.put("Table.rowHeight", 25);
-            UIManager.put("Table.gridColor", new Color(220, 220, 220));
-            UIManager.put("Table.selectionBackground", new Color(51, 122, 183));
+            // Enhanced table styling
+            UIManager.put("Table.rowHeight", 30);
+            UIManager.put("Table.gridColor", new Color(240, 240, 240));
+            UIManager.put("Table.selectionBackground", primaryColor);
             UIManager.put("Table.selectionForeground", Color.WHITE);
+            UIManager.put("TableHeader.background", backgroundColor);
+            UIManager.put("TableHeader.font", new Font("Segoe UI", Font.BOLD, 13));
+
+            // Menu styling
+            UIManager.put("MenuBar.background", backgroundColor);
+            UIManager.put("Menu.background", backgroundColor);
+            UIManager.put("Menu.selectionBackground", primaryColor);
+            UIManager.put("Menu.selectionForeground", Color.WHITE);
+            UIManager.put("MenuItem.selectionBackground", primaryColor);
+            UIManager.put("MenuItem.selectionForeground", Color.WHITE);
+
+            // Button styling
+            UIManager.put("Button.background", primaryColor);
+            UIManager.put("Button.foreground", Color.WHITE);
+            UIManager.put("Button.select", accentColor);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -64,14 +86,13 @@ public class MainWindow extends JFrame implements ActionListener {
 
     private void styleMenuBar() {
         if (menuBar != null) {
-            Color menuBackground = new Color(240, 240, 240);
-            menuBar.setBackground(menuBackground);
+            menuBar.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+            menuBar.setOpaque(true);
 
             for (int i = 0; i < menuBar.getMenuCount(); i++) {
                 JMenu menu = menuBar.getMenu(i);
                 if (menu != null) {
-                    menu.setBackground(menuBackground);
-                    menu.setBorderPainted(false);
+                    menu.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
                     styleMenuItems(menu);
                 }
             }
@@ -159,7 +180,7 @@ public class MainWindow extends JFrame implements ActionListener {
         // Flights Menu
         flightsMenu = new JMenu("Flights");
         flightsViewUpcoming = new JMenuItem("View Upcoming Flights");
-        flightsViewUpcoming.setToolTipText("View flights that have not departed");
+        flightsViewUpcoming.setToolTipText("View flights that have not departed yet");
         flightsViewUpcoming.addActionListener(e -> displayUpcomingFlights());
         flightsViewAll = new JMenuItem("View All Flights");
         flightsViewAll.setToolTipText("View all flights including past flights");
@@ -909,13 +930,36 @@ public class MainWindow extends JFrame implements ActionListener {
     public void setAdminMode(boolean isAdmin) {
         this.isAdmin = isAdmin;
         if (!isAdmin) {
+            // Hide admin menu
             adminMenu.setVisible(false);
+
+            // Disable administrative flight actions
             flightsAdd.setEnabled(false);
             flightsDel.setEnabled(false);
+
+            // Modify bookings menu for customer
+            bookingsMenu.removeAll();
+            bookingsView = new JMenuItem("View Bookings");
+            bookingsIssue = new JMenuItem("New Booking");
+            bookingsCancel = new JMenuItem("Cancel Booking");
+            bookingsPayment = new JMenuItem("Make Payment");
+
+            bookingsView.addActionListener(e -> displayCustomerBookings(loggedInCustomerId));
+            bookingsIssue.addActionListener(e -> new AddBookingWindow(this));
+            bookingsCancel.addActionListener(e -> new CancelBookingWindow(this, loggedInCustomerId));
+            bookingsPayment.addActionListener(e -> displayCustomerPayments(loggedInCustomerId));
+
+            bookingsMenu.add(bookingsView);
+            bookingsMenu.add(bookingsIssue);
+            bookingsMenu.add(bookingsCancel);
+            bookingsMenu.add(bookingsPayment);
+
+            // Replace Customers menu with My Flights
+            customersMenu.setText("My Flights");
             customersMenu.removeAll();
-            JMenuItem myDetails = new JMenuItem("My Details");
-            myDetails.addActionListener(e -> displayCustomerDetails(loggedInCustomerId));
-            customersMenu.add(myDetails);
+            JMenuItem viewMyFlights = new JMenuItem("View My Flights");
+            viewMyFlights.addActionListener(e -> displayCustomerFlights(loggedInCustomerId));
+            customersMenu.add(viewMyFlights);
         } else {
             adminMenu.setVisible(true);
             flightsAdd.setEnabled(true);
@@ -936,6 +980,149 @@ public class MainWindow extends JFrame implements ActionListener {
             customersMenu.add(addCustomer);
             customersMenu.add(updateCustomer);
             customersMenu.add(deleteCustomer);
+        }
+    }
+
+    // Add new method to display customer flights in the main window
+    private void displayCustomerFlights(int customerId) {
+        try {
+            Customer customer = fbs.getCustomerByID(customerId);
+            List<Flight> customerFlights = customer.getBookings().stream()
+                    .map(Booking::getFlight)
+                    .collect(Collectors.toList());
+
+            // Create table model
+            String[] columns = { "Flight Number", "From", "To", "Date", "Status", "Price" };
+            Object[][] data = new Object[customerFlights.size()][6];
+
+            for (int i = 0; i < customerFlights.size(); i++) {
+                Flight flight = customerFlights.get(i);
+                String status = flight.getDepartureDate().isAfter(LocalDate.now()) ? "Upcoming" : "Past";
+
+                data[i] = new Object[] {
+                        flight.getFlightNumber(),
+                        flight.getOrigin(),
+                        flight.getDestination(),
+                        flight.getDepartureDate(),
+                        status,
+                        String.format("$%.2f", flight.calculatePrice(LocalDate.now()))
+                };
+            }
+
+            // Create and configure table
+            JTable table = new JTable(data, columns) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+
+            // Style the table
+            table.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+            table.setRowHeight(30);
+            table.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 14));
+
+            // Use the custom renderer for the status column
+            table.getColumnModel().getColumn(4).setCellRenderer(new StatusCellRenderer());
+
+            // Create panel with summary
+            JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+            mainPanel.add(new JScrollPane(table), BorderLayout.CENTER);
+
+            // Add summary panel
+            JPanel summaryPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 10));
+            summaryPanel.setBackground(new Color(245, 245, 245));
+            summaryPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+            int upcomingCount = (int) customerFlights.stream()
+                    .filter(f -> f.getDepartureDate().isAfter(LocalDate.now()))
+                    .count();
+
+            summaryPanel.add(new JLabel(String.format("Total Flights: %d", customerFlights.size())));
+            summaryPanel.add(new JLabel(String.format("Upcoming Flights: %d", upcomingCount)));
+
+            mainPanel.add(summaryPanel, BorderLayout.SOUTH);
+
+            // Refresh main window
+            getContentPane().removeAll();
+            getContentPane().add(mainPanel);
+            setTitle("Flight Booking System - My Flights");
+            revalidate();
+            repaint();
+
+        } catch (FlightBookingSystemException ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Error loading flights: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Add new method to display only customer's bookings
+    private void displayCustomerBookings(int customerId) {
+        try {
+            Customer customer = fbs.getCustomerByID(customerId);
+            List<Booking> bookings = customer.getBookings();
+            String[] columns = { "Booking ID", "Flight", "Booking Date", "Fee", "Payment Status" };
+            Object[][] data = new Object[bookings.size()][5];
+
+            for (int i = 0; i < bookings.size(); i++) {
+                Booking booking = bookings.get(i);
+                data[i][0] = booking.getId();
+                data[i][1] = booking.getFlight().getFlightNumber();
+                data[i][2] = booking.getBookingDate();
+                data[i][3] = String.format("$%.2f", booking.getBookingFee());
+                data[i][4] = booking.isPaymentProcessed() ? "Paid" : "Pending";
+            }
+
+            JTable table = new JTable(data, columns) {
+                @Override
+                public boolean isCellEditable(int row, int column) {
+                    return false;
+                }
+            };
+            refreshTable(table, "My Bookings");
+        } catch (FlightBookingSystemException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    // Add new method to display customer's payments
+    private void displayCustomerPayments(int customerId) {
+        try {
+            Customer customer = fbs.getCustomerByID(customerId);
+            List<Booking> unpaidBookings = customer.getBookings().stream()
+                    .filter(b -> !b.isPaymentProcessed())
+                    .collect(Collectors.toList());
+
+            if (unpaidBookings.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "You have no pending payments.", "Payments",
+                        JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+
+            Object[] options = unpaidBookings.stream()
+                    .map(b -> String.format("Booking #%d - Flight %s ($%.2f)",
+                            b.getId(),
+                            b.getFlight().getFlightNumber(),
+                            b.getBookingFee()))
+                    .toArray();
+
+            String selected = (String) JOptionPane.showInputDialog(this,
+                    "Select a booking to pay:",
+                    "Process Payment",
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+
+            if (selected != null) {
+                int bookingId = Integer.parseInt(selected.split("#")[1].split(" ")[0]);
+                Booking booking = fbs.getBookingByID(bookingId);
+                new PaymentWindow(this, booking);
+            }
+        } catch (FlightBookingSystemException ex) {
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 
