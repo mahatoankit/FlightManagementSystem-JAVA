@@ -32,41 +32,67 @@ public class MainWindow extends JFrame implements ActionListener {
 
     public MainWindow(FlightBookingSystem fbs) {
         this.fbs = fbs;
-        applyCustomUI();
+        setUIFont();
         initialize();
-        addWindowListener(new WindowAdapter() {
-        /**
-         * Listens for the window closing event and stores the current state of the system to a file before exiting.
-         * If there is an error storing the data, a message dialog will appear with the error message.
-         * @param e the window closing event
-         */
-            @Override
-            public void windowClosing(WindowEvent e) {
-                try {
-                    FlightBookingSystemData.store(fbs);
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(MainWindow.this,
-                            "Error saving data: " + ex.getMessage(),
-                            "Error",
-                            JOptionPane.ERROR_MESSAGE);
-                } finally {
-                    System.exit(0);
-                }
-            }
-        });
     }
 
-    /**
-     * Applies custom UI settings to the application, such as font sizes, font styles, and panel background colors.
-     * This method is called once in the constructor of the MainWindow class.
-     */
-    private void applyCustomUI() {
-        UIManager.put("Label.font", new Font("SansSerif", Font.PLAIN, 18));
-        UIManager.put("Button.font", new Font("SansSerif", Font.BOLD, 18));
-        UIManager.put("TextField.font", new Font("SansSerif", Font.PLAIN, 18));
-        UIManager.put("Table.font", new Font("SansSerif", Font.PLAIN, 18));
-        UIManager.put("Table.rowHeight", 30);
-        UIManager.put("Panel.background", Color.WHITE);
+    private void setUIFont() {
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            Font menuFont = new Font("Segoe UI", Font.PLAIN, 14);
+            Font tableFont = new Font("Segoe UI", Font.PLAIN, 13);
+
+            // Set default fonts
+            UIManager.put("Menu.font", menuFont);
+            UIManager.put("MenuItem.font", menuFont);
+            UIManager.put("Table.font", tableFont);
+            UIManager.put("Label.font", menuFont);
+            UIManager.put("Button.font", menuFont);
+
+            // Set other UI properties
+            UIManager.put("Table.rowHeight", 25);
+            UIManager.put("Table.gridColor", new Color(220, 220, 220));
+            UIManager.put("Table.selectionBackground", new Color(51, 122, 183));
+            UIManager.put("Table.selectionForeground", Color.WHITE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private void styleMenuBar() {
+        if (menuBar != null) {
+            Color menuBackground = new Color(240, 240, 240);
+            menuBar.setBackground(menuBackground);
+
+            for (int i = 0; i < menuBar.getMenuCount(); i++) {
+                JMenu menu = menuBar.getMenu(i);
+                if (menu != null) {
+                    menu.setBackground(menuBackground);
+                    menu.setBorderPainted(false);
+                    styleMenuItems(menu);
+                }
+            }
+        }
+    }
+
+    private void styleMenuItems(JMenu menu) {
+        for (int i = 0; i < menu.getItemCount(); i++) {
+            JMenuItem item = menu.getItem(i);
+            if (item != null) {
+                item.setBackground(Color.WHITE);
+                item.setBorderPainted(false);
+                item.addMouseListener(new MouseAdapter() {
+                    public void mouseEntered(MouseEvent e) {
+                        item.setBackground(new Color(230, 240, 250));
+                    }
+
+                    public void mouseExited(MouseEvent e) {
+                        item.setBackground(Color.WHITE);
+                    }
+                });
+            }
+        }
     }
 
     // Helper method to load and scale icons from file paths
@@ -89,15 +115,22 @@ public class MainWindow extends JFrame implements ActionListener {
     private void initialize() {
         setTitle("Flight Booking Management System");
         setSize(1000, 600);
-        initMenuBar();
+
+        // Create menuBar first
+        menuBar = new JMenuBar();
+        initMenuBar(); // This will populate the menuBar
+        setJMenuBar(menuBar);
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setVisible(true);
     }
 
     /**
      * Initializes the main menu bar of the application.
-     * Creates the menu bar, admin menu, flights menu, bookings menu, and customers menu.
-     * Adds the menu items to their respective menus and sets the action listeners for each menu item.
+     * Creates the menu bar, admin menu, flights menu, bookings menu, and customers
+     * menu.
+     * Adds the menu items to their respective menus and sets the action listeners
+     * for each menu item.
      * Finally, sets the menu bar to the window.
      */
     private void initMenuBar() {
@@ -128,7 +161,7 @@ public class MainWindow extends JFrame implements ActionListener {
         flightsViewUpcoming.addActionListener(e -> displayUpcomingFlights());
         flightsViewAll = new JMenuItem("View All Flights");
         flightsViewAll.setToolTipText("View all flights including past flights");
-    
+
         flightsViewAll.addActionListener(e -> displayAllFlights());
         flightsAdd = new JMenuItem("Add New Flight");
         flightsAdd.setToolTipText("Add a new flight (Admin only)");
@@ -154,7 +187,7 @@ public class MainWindow extends JFrame implements ActionListener {
         bookingsView.addActionListener(e -> displayBookings());
         bookingsIssue = new JMenuItem("New Booking");
         bookingsIssue.setToolTipText("Create a new booking");
- 
+
         bookingsIssue.addActionListener(e -> new AddBookingWindow(this));
         bookingsUpdate = new JMenuItem("Update Booking");
         bookingsUpdate.setToolTipText("Update an existing booking");
@@ -274,7 +307,8 @@ public class MainWindow extends JFrame implements ActionListener {
 
     /**
      * Displays all flights in the system, including deleted flights.
-     * The table includes the flight ID, flight number, origin, destination, departure date, base price, and capacity.
+     * The table includes the flight ID, flight number, origin, destination,
+     * departure date, base price, and capacity.
      * Double-clicking on a flight will display its details.
      */
     public void displayAllFlights() {
@@ -295,15 +329,15 @@ public class MainWindow extends JFrame implements ActionListener {
         JTable table = new JTable(data, columns);
         refreshTable(table, "All Flights");
         table.addMouseListener(new MouseAdapter() {
-/**
- * Handles double-click events on the flights table.
- * If a row is double-clicked, retrieves the flight ID from the selected row
- * and displays the flight details by calling displayFlightDetails().
- * If no row is selected on double-click, logs a message indicating that
- * no row was selected.
- *
- * @param e The MouseEvent triggered by the double-click action
- */
+            /**
+             * Handles double-click events on the flights table.
+             * If a row is double-clicked, retrieves the flight ID from the selected row
+             * and displays the flight details by calling displayFlightDetails().
+             * If no row is selected on double-click, logs a message indicating that
+             * no row was selected.
+             *
+             * @param e The MouseEvent triggered by the double-click action
+             */
 
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() >= 2) {
@@ -368,7 +402,7 @@ public class MainWindow extends JFrame implements ActionListener {
             /**
              * Disables cell editing for the table.
              * 
-             * @param row   the row being queried
+             * @param row    the row being queried
              * @param column the column being queried
              * @return false to indicate that cells are not editable
              */
@@ -430,14 +464,14 @@ public class MainWindow extends JFrame implements ActionListener {
              */
             private static final long serialVersionUID = 1L;
 
-/**
- * Determines whether a cell in the table is editable.
- * This implementation ensures that no cells are editable.
- *
- * @param row the row index of the cell being queried
- * @param column the column index of the cell being queried
- * @return false always, indicating cells are not editable
- */
+            /**
+             * Determines whether a cell in the table is editable.
+             * This implementation ensures that no cells are editable.
+             *
+             * @param row    the row index of the cell being queried
+             * @param column the column index of the cell being queried
+             * @return false always, indicating cells are not editable
+             */
 
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -472,10 +506,14 @@ public class MainWindow extends JFrame implements ActionListener {
     }
 
     /**
-     * Displays a window showing all customers in the system, including soft-deleted customers.
-     * The window shows all customer details, with a single column for the "Active" status
-     * which is "Yes" if the customer is active and "No" if the customer is soft-deleted.
-     * When a row is double-clicked, it will display the booking details for the customer
+     * Displays a window showing all customers in the system, including soft-deleted
+     * customers.
+     * The window shows all customer details, with a single column for the "Active"
+     * status
+     * which is "Yes" if the customer is active and "No" if the customer is
+     * soft-deleted.
+     * When a row is double-clicked, it will display the booking details for the
+     * customer
      * represented by that row.
      */
     public void displayAllCustomers() {
@@ -503,16 +541,16 @@ public class MainWindow extends JFrame implements ActionListener {
         };
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.addMouseListener(new MouseAdapter() {
-/**
- * Handles double-click events on table rows.
- * 
- * When a row is double-clicked, it retrieves the customer ID
- * from the selected row and displays the booking details for
- * the corresponding customer. If no row is selected on double-click,
- * a message is printed indicating that no row was selected.
- * 
- * @param e the MouseEvent representing the double-click
- */
+            /**
+             * Handles double-click events on table rows.
+             * 
+             * When a row is double-clicked, it retrieves the customer ID
+             * from the selected row and displays the booking details for
+             * the corresponding customer. If no row is selected on double-click,
+             * a message is printed indicating that no row was selected.
+             * 
+             * @param e the MouseEvent representing the double-click
+             */
 
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -704,7 +742,6 @@ public class MainWindow extends JFrame implements ActionListener {
         this.loggedInCustomerId = id;
     }
 
-
     /**
      * Returns the ID of the currently logged-in customer.
      * 
@@ -714,7 +751,6 @@ public class MainWindow extends JFrame implements ActionListener {
     public Integer getLoggedInCustomerId() {
         return loggedInCustomerId;
     }
-
 
     /**
      * Refreshes the bookings display to show the current bookings.
@@ -726,25 +762,29 @@ public class MainWindow extends JFrame implements ActionListener {
     public void refreshBookingsDisplay() {
         displayBookings();
     }
+
     /**
      * This method is not used directly; individual menu items have their own
      * listeners and handle their own events. This implementation is a
      * 
      * @param e The ActionEvent triggered by the user
-     * no-op.
-
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        // Not used directly; individual menu items have their own listeners.
-    }
-
-/**
- * The main entry point for the application. It initializes the flight booking system
- * by loading data and launching the login window on the Event Dispatch Thread.
- *
- * @param args command-line arguments (not used)
- */
+     *          no-op.
+     * 
+     * 
+     * @Override
+     *           public void actionPerformed(ActionEvent e) {
+     *           // Not used directly; individual menu items have their own
+     *           listeners.
+     *           }
+     * 
+     *           /**
+     *           The main entry point for the application. It initializes the flight
+     *           booking system
+     *           by loading data and launching the login window on the Event
+     *           Dispatch Thread.
+     *
+     * @param args command-line arguments (not used)
+     */
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
@@ -760,6 +800,7 @@ public class MainWindow extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         // TODO Auto-generated method stub
+        
         throw new UnsupportedOperationException("Unimplemented method 'actionPerformed'");
     }
 }
