@@ -2,6 +2,7 @@ package bcu.cmp5332.bookingsystem.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Represents a customer in the flight booking system.
@@ -30,13 +31,7 @@ public class Customer {
     private boolean isDeleted = false;
 
     /**
-     * Constructs a new Customer with the specified details.
-     *
-     * @param id       unique identifier for the customer
-     * @param name     customer's full name
-     * @param phone    customer's phone number
-     * @param email    customer's email address
-     * @param password customer's login password
+     * Constructor with password parameter
      */
     public Customer(int id, String name, String phone, String email, String password) {
         this.id = id;
@@ -45,6 +40,27 @@ public class Customer {
         this.email = email;
         this.password = password;
         this.bookings = new ArrayList<>();
+    }
+
+    /**
+     * Constructor without password parameter - generates a random default password
+     */
+    public Customer(int id, String name, String phone, String email) {
+        this(id, name, phone, email, generateDefaultPassword());
+    }
+
+    /**
+     * Generates a random default password
+     */
+    private static String generateDefaultPassword() {
+        // Generate a random 8-character password
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder password = new StringBuilder();
+        Random random = new Random();
+        for (int i = 0; i < 8; i++) {
+            password.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return password.toString();
     }
 
     /**

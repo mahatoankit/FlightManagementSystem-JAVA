@@ -1,120 +1,159 @@
 package bcu.cmp5332.bookingsystem.gui;
 
-import bcu.cmp5332.bookingsystem.commands.AddCustomer;
 import bcu.cmp5332.bookingsystem.main.FlightBookingSystemException;
+import bcu.cmp5332.bookingsystem.model.FlightBookingSystem;
+import bcu.cmp5332.bookingsystem.data.FlightBookingSystemData;
+import bcu.cmp5332.bookingsystem.model.Customer;
+
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-/**
- * A window interface for adding new customers to the booking system.
- * Provides a form with fields for customer details including name, phone,
- * email, and password.
- */
 public class AddCustomerWindow extends JFrame implements ActionListener {
 
-    private MainWindow mw;
-    private JTextField nameField = new JTextField(20);
-    private JTextField phoneField = new JTextField(15);
-    private JTextField emailField = new JTextField(30);
-    private JPasswordField passwordField = new JPasswordField(20);
-    private JButton addBtn = new JButton("Add");
+    private final MainWindow mw;
+    private final JTextField nameField = new JTextField();
+    private final JTextField phoneField = new JTextField();
+    private final JTextField emailField = new JTextField();
+    private final JButton addBtn = new JButton("Add");
+    private final JButton cancelBtn = new JButton("Cancel");
 
-    /**
-     * Constructs a new AddCustomerWindow.
-     * 
-     * @param mw the parent MainWindow instance
-     */
     public AddCustomerWindow(MainWindow mw) {
         this.mw = mw;
         initialize();
     }
 
-    /**
-     * Initializes the window components and sets up the layout.
-     * Creates and arranges all the necessary input fields and the add button.
-     */
     private void initialize() {
-        try {
-            UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-
         setTitle("Add New Customer");
-        setSize(400, 250);
-        setLayout(new BorderLayout());
-
-        JPanel panel = new JPanel(new GridLayout(5, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        panel.setBackground(new Color(240, 240, 240));
-
-        panel.add(createStyledLabel("Name:"));
-        panel.add(nameField);
-        panel.add(createStyledLabel("Phone:"));
-        panel.add(phoneField);
-        panel.add(createStyledLabel("Email:"));
-        panel.add(emailField);
-        panel.add(createStyledLabel("Password:"));
-        panel.add(passwordField);
-        panel.add(new JLabel(""));
-        panel.add(createStyledButton(addBtn));
-
-        addBtn.addActionListener(this);
-
-        getContentPane().add(panel, BorderLayout.CENTER);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        setSize(400, 400);
         setLocationRelativeTo(mw);
+
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel formPanel = new JPanel(new GridBagLayout());
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridwidth = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(5, 5, 5, 5);
+
+        // Name field
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        formPanel.add(new JLabel("Name:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        formPanel.add(nameField, gbc);
+
+        // Phone field
+        gbc.gridx = 0;
+        gbc.gridy = 1;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Phone:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        formPanel.add(phoneField, gbc);
+
+        // Email field
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.weightx = 0.0;
+        formPanel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
+        gbc.weightx = 1.0;
+        formPanel.add(emailField, gbc);
+
+        // Style buttons
+        addBtn.setBackground(new Color(46, 125, 50));
+        addBtn.setForeground(Color.WHITE);
+        cancelBtn.setBackground(new Color(198, 40, 40));
+        cancelBtn.setForeground(Color.WHITE);
+
+        // Add action listeners
+        addBtn.addActionListener(this);
+        cancelBtn.addActionListener(this);
+
+        // Add buttons to panel
+        buttonPanel.add(addBtn);
+        buttonPanel.add(cancelBtn);
+
+        // Combine panels
+        mainPanel.add(formPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        setContentPane(mainPanel);
         setVisible(true);
     }
 
-    /**
-     * Creates a styled label with custom font settings.
-     * 
-     * @param text the text to display in the label
-     * @return a styled JLabel instance
-     */
-    private JLabel createStyledLabel(String text) {
-        JLabel label = new JLabel(text);
-        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
-        return label;
-    }
-
-    /**
-     * Creates a styled button with custom appearance settings.
-     * 
-     * @param button the JButton to style
-     * @return the styled JButton instance
-     */
-    private JButton createStyledButton(JButton button) {
-        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        button.setBackground(new Color(0, 123, 255));
-        button.setForeground(Color.WHITE);
-        button.setFocusPainted(false);
-        button.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
-        return button;
-    }
-
-    /**
-     * Handles the add button click event.
-     * Collects input data, validates it, and creates a new customer in the system.
-     * Displays error messages if validation fails or if there are system
-     * exceptions.
-     * 
-     * @param e the ActionEvent triggered by button click
-     */
     @Override
-    public void actionPerformed(ActionEvent e) {
+    public void actionPerformed(ActionEvent ev) {
+        if (ev.getSource() == addBtn) {
+            addCustomer();
+        } else if (ev.getSource() == cancelBtn) {
+            dispose();
+        }
+    }
+
+    private void addCustomer() {
         try {
-            String name = nameField.getText();
-            String phone = phoneField.getText();
-            String email = emailField.getText();
-            String password = new String(passwordField.getPassword());
-            AddCustomer addCmd = new AddCustomer(name, phone, email, password);
-            addCmd.execute(mw.getFlightBookingSystem());
+            // Input validation
+            String name = nameField.getText().trim();
+            String phone = phoneField.getText().trim();
+            String email = emailField.getText().trim();
+
+            if (name.isEmpty() || phone.isEmpty() || email.isEmpty()) {
+                throw new FlightBookingSystemException("All fields are required.");
+            }
+
+            // Email validation
+            if (!email.matches("^[A-Za-z0-9+_.-]+@(.+)$")) {
+                throw new FlightBookingSystemException("Invalid email format.");
+            }
+
+            // Phone validation
+            if (!phone.matches("^[0-9+()-]{10,15}$")) {
+                throw new FlightBookingSystemException("Invalid phone number format.");
+            }
+
+            // Get the flight booking system and add the customer
+            FlightBookingSystem fbs = mw.getFlightBookingSystem();
+            fbs.addCustomer(name, phone, email);
+
+            // After successful addition, show the generated password
+            Customer lastAdded = fbs.getCustomers().stream()
+                    .filter(c -> c.getEmail().equals(email))
+                    .findFirst()
+                    .orElseThrow(() -> new FlightBookingSystemException("Failed to retrieve added customer"));
+
+            // Show success message with password
+            JOptionPane.showMessageDialog(this,
+                    "Customer added successfully!\nTemporary password: " + lastAdded.getPassword() +
+                            "\nPlease make sure to save this password.",
+                    "Success",
+                    JOptionPane.INFORMATION_MESSAGE);
+
+            // Save the updated system state
+            FlightBookingSystemData.store(fbs);
+
+            // Refresh the customers display in main window
             mw.displayAllCustomers();
-            this.dispose();
+
+            // Close the add customer window
+            dispose();
+
         } catch (FlightBookingSystemException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Error: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this,
+                    "An unexpected error occurred: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }

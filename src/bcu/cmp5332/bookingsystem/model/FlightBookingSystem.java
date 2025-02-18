@@ -142,6 +142,43 @@ public class FlightBookingSystem {
         customers.put(customer.getId(), customer);
     }
 
+    public void addCustomer(String name, String phone, String email) throws FlightBookingSystemException {
+        // Validate inputs
+        if (name == null || name.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Customer name cannot be empty");
+        }
+        if (phone == null || phone.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Phone number cannot be empty");
+        }
+        if (email == null || email.trim().isEmpty()) {
+            throw new FlightBookingSystemException("Email cannot be empty");
+        }
+
+        // Check for duplicate email
+        for (Customer existingCustomer : customers.values()) {
+            if (existingCustomer.getEmail().equalsIgnoreCase(email.trim())) {
+                throw new FlightBookingSystemException("A customer with this email already exists");
+            }
+        }
+
+        // Generate new customer ID
+        int newId = getNextCustomerId();
+
+        // Create and add the new customer
+        Customer newCustomer = new Customer(newId, name.trim(), phone.trim(), email.trim());
+        customers.put(newId, newCustomer);
+    }
+
+    private int getNextCustomerId() {
+        int maxId = 0;
+        for (Customer customer : customers.values()) {
+            if (customer.getId() > maxId) {
+                maxId = customer.getId();
+            }
+        }
+        return maxId + 1;
+    }
+
     /** @return defensive copy of all bookings */
     public List<Booking> getBookings() {
         return new ArrayList<>(bookings.values());
