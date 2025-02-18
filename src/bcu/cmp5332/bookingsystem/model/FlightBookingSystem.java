@@ -163,34 +163,31 @@ public class FlightBookingSystem {
      *                                      full
      */
     public Booking addBooking(int customerId, int flightId, LocalDate bookingDate) throws FlightBookingSystemException {
-        // Debug prints
-        System.out.println("DEBUG: Attempting to create booking for customer " + customerId + " on flight " + flightId);
-        System.out.println("DEBUG: Available flights: " + flights.keySet());
+        System.out.println("DEBUG: Creating new booking");
+        System.out.println("DEBUG: Customer ID: " + customerId);
+        System.out.println("DEBUG: Flight ID: " + flightId);
 
-        // Get customer and flight, throws exception if not found
         Customer customer = getCustomerByID(customerId);
         Flight flight = getFlightByID(flightId);
 
-        // Try to add passenger to flight
+        System.out.println("DEBUG: Customer found: " + customer.getName());
+        System.out.println("DEBUG: Flight found: " + flight.getFlightNumber());
+
         if (!flight.addPassenger(customer)) {
-            throw new FlightBookingSystemException("Flight is full.");
+            System.out.println("DEBUG: Failed to add passenger to flight");
+            throw new FlightBookingSystemException("Flight is full or passenger already booked");
         }
 
-        // Calculate price based on booking date
+        System.out.println("DEBUG: Passenger added to flight successfully");
+
         double price = flight.calculatePrice(bookingDate);
-
-        // Generate new booking ID
         int bookingId = bookings.size() + cancelledBookings.size() + 1;
-
-        // Create new booking
         Booking booking = new Booking(bookingId, customer, flight, bookingDate, price);
 
-        // Add booking to customer's bookings list
         customer.addBooking(booking);
-
-        // Add booking to system's bookings map
         bookings.put(bookingId, booking);
 
+        System.out.println("DEBUG: Booking created successfully with ID: " + bookingId);
         return booking;
     }
 
@@ -206,9 +203,27 @@ public class FlightBookingSystem {
         if (booking.isCancelled()) {
             throw new FlightBookingSystemException("Booking is already cancelled.");
         }
+
+        // Remove passenger from flight
+        Flight flight = booking.getFlight();
+        Customer customer = booking.getCustomer();
+        if (!flight.removePassenger(customer)) {
+            throw new FlightBookingSystemException("Customer not found on flight.");
+        }
+
+        // Mark booking as cancelled
         booking.cancel();
+
+        // Move booking to cancelled bookings map
         bookings.remove(bookingId);
         cancelledBookings.put(bookingId, booking);
+
+        // Update customer's booking list
+        customer.cancelBooking(booking);
+
+        System.out.println("DEBUG: Booking " + bookingId + " cancelled successfully");
+        System.out.println("DEBUG: Customer removed from flight " + flight.getFlightNumber());
+        System.out.println("DEBUG: Remaining passengers on flight: " + flight.getPassengers().size());
     }
 
     /**
@@ -219,10 +234,21 @@ public class FlightBookingSystem {
      */
     public void removeCustomer(int customerId) throws FlightBookingSystemException {
         Customer customer = getCustomerByID(customerId);
-        customer.setDeleted(true);
-        for (Booking booking : new ArrayList<>(customer.getBookings())) {
-            cancelBooking(booking.getId(), 0);
+
+        // Check if customer has active bookings
+        List<Booking> activeBookings = customer.getBookings().stream()
+                .filter(b -> !b.isCancelled())
+                .collect(Collectors.toList());
+
+        if (!activeBookings.isEmpty()) {
+            // Cancel all active bookings first
+            for (Booking booking : activeBookings) {
+                cancelBooking(booking.getId(), 0);
+            }
         }
+
+        customer.setDeleted(true);
+        System.out.println("DEBUG: Customer " + customerId + " marked as deleted");
     }
 
     /**
@@ -286,5 +312,23 @@ public class FlightBookingSystem {
      */
     public List<Payment> getPayments() {
         return new ArrayList<>(payments);
+    }
+
+    public void updateCustomer(int customerId, String name, String phone, String email)
+            throws FlightBookingSystemException {
+        Customer customer = getCustomerByID(customerId);
+
+        // Check if new email is already in use by another customer
+        for (Customer existing : customers.values()) {
+            if (!existing.isDeleted() && existing.getId() != customerId && existing.getEmail().equals(email)) {
+                throw new FlightBookingSystemException("Email address already in use by another customer");
+            }
+        }
+
+        customer.setName(name);
+        customer.setPhone(phone);
+        customer.setEmail(email);
+
+        System.out.println("DEBUG: Updated customer " + customerId + " successfully");
     }
 }

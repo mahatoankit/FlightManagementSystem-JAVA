@@ -400,6 +400,11 @@ public class MainWindow extends JFrame implements ActionListener {
     public void displayFlightDetails(int flightId) {
         try {
             Flight flight = fbs.getFlightByID(flightId);
+            List<Customer> passengers = flight.getPassengers();
+
+            System.out.println("DEBUG: Displaying details for flight " + flight.getFlightNumber());
+            System.out.println("DEBUG: Number of passengers found: " + passengers.size());
+
             StringBuilder details = new StringBuilder();
             details.append("Flight Details:\n")
                     .append("Flight Number: ").append(flight.getFlightNumber()).append("\n")
@@ -407,20 +412,38 @@ public class MainWindow extends JFrame implements ActionListener {
                     .append("Destination: ").append(flight.getDestination()).append("\n")
                     .append("Departure Date: ").append(flight.getDepartureDate()).append("\n")
                     .append("Capacity: ").append(flight.getCapacity()).append("\n")
-                    .append("Base Price: $").append(flight.getBasePrice()).append("\n\n")
-                    .append("Passengers:\n");
-            List<Customer> passengers = flight.getPassengers();
+                    .append("Base Price: $").append(String.format("%.2f", flight.getBasePrice())).append("\n")
+                    .append("Current Passengers: ").append(passengers.size()).append("/").append(flight.getCapacity())
+                    .append("\n\n")
+                    .append("Passenger List:\n");
+
             if (passengers.isEmpty()) {
                 details.append("No passengers have booked this flight.");
             } else {
                 for (Customer c : passengers) {
-                    details.append(c.getName()).append(" (").append(c.getPhone()).append(")\n");
+                    details.append("• ").append(c.getName())
+                            .append(" (Phone: ").append(c.getPhone())
+                            .append(", Email: ").append(c.getEmail()).append(")\n");
                 }
             }
-            JOptionPane.showMessageDialog(this, details.toString(), "Flight Details", JOptionPane.INFORMATION_MESSAGE);
+
+            JTextArea textArea = new JTextArea(details.toString());
+            textArea.setEditable(false);
+            textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
+            textArea.setMargin(new Insets(10, 10, 10, 10));
+
+            JScrollPane scrollPane = new JScrollPane(textArea);
+            scrollPane.setPreferredSize(new Dimension(500, 400));
+
+            JOptionPane.showMessageDialog(this, scrollPane,
+                    "Flight Details - " + flight.getFlightNumber(),
+                    JOptionPane.INFORMATION_MESSAGE);
+
         } catch (FlightBookingSystemException ex) {
-            JOptionPane.showMessageDialog(this, "Error retrieving flight details: " + ex.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Error retrieving flight details: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -797,15 +820,41 @@ public class MainWindow extends JFrame implements ActionListener {
         if (currentTable != null) {
             int selectedRow = currentTable.getSelectedRow();
             if (selectedRow >= 0) {
-                int custId = (int) currentTable.getValueAt(selectedRow, 0);
                 try {
-                    fbs.removeCustomer(custId);
-                    FlightBookingSystemData.store(fbs);
-                    displayAllCustomers();
+                    int custId = (int) currentTable.getValueAt(selectedRow, 0);
+                    Customer customer = fbs.getCustomerByID(custId);
+
+                    int confirm = JOptionPane.showConfirmDialog(
+                            this,
+                            "Are you sure you want to delete customer: " + customer.getName() + "?\n" +
+                                    "This will also cancel all their active bookings.",
+                            "Confirm Deletion",
+                            JOptionPane.YES_NO_OPTION,
+                            JOptionPane.WARNING_MESSAGE);
+
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        fbs.removeCustomer(custId);
+                        FlightBookingSystemData.store(fbs);
+                        JOptionPane.showMessageDialog(
+                                this,
+                                "Customer deleted successfully",
+                                "Success",
+                                JOptionPane.INFORMATION_MESSAGE);
+                        displayAllCustomers();
+                    }
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(this, "Error deleting customer: " + ex.getMessage(),
-                            "Error", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(
+                            this,
+                            "Error deleting customer: " + ex.getMessage(),
+                            "Error",
+                            JOptionPane.ERROR_MESSAGE);
                 }
+            } else {
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Please select a customer to delete",
+                        "No Selection",
+                        JOptionPane.WARNING_MESSAGE);
             }
         }
     }

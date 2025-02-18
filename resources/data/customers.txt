@@ -1,7 +1,7 @@
-1::Abdel-Rahman Tawil::07555555555::abdel@gmail.com::abdel123::true::
-2::Kostas Vlachos::07596454545::kostas@gmail.com::kostas123::true::
+1::Abdel-Rahman Tawil::07555555555::abdel@gmail.com::abdel123::false::
+2::Kostas Vlachos::07596454545::kostas@gmail.com::kostas123::false::
 3::Sammy::Zyan::samy@gmail.com::default123::false::
 4::Alice::123456789::alice@gmail.com::alice123::false::
-5::elon::122345567::elon@gmail.com::elon123::false::
-6::Lukas::Graham::lukas@gmail.com::lukas::false::
+5::elon::122345567::elon@gmail.com::elon123::true::
+6::Lukas::Graham::lukas@gmail.com::lukas::true::
 7::shyam::234234::shyam@gmail.com::shyam::false::

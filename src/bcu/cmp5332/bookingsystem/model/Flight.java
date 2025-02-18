@@ -15,28 +15,28 @@ import java.util.Set;
 public class Flight {
     /** Unique identifier for the flight */
     private int id;
-    
+
     /** Flight number (airline code + number) */
     private String flightNumber;
-    
+
     /** Departure airport */
     private String origin;
-    
+
     /** Arrival airport */
     private String destination;
-    
+
     /** Date of departure */
     private LocalDate departureDate;
-    
+
     /** Standard ticket price */
     private double basePrice;
-    
+
     /** Maximum number of passengers */
     private int capacity;
-    
+
     /** Flag indicating if the flight has been soft-deleted */
     private boolean isDeleted = false;
-    
+
     /** Set of passengers booked on this flight */
     private final Set<Customer> passengers;
 
@@ -52,7 +52,7 @@ public class Flight {
      * @param capacity      maximum number of passengers
      */
     public Flight(int id, String flightNumber, String origin, String destination,
-                 LocalDate departureDate, double basePrice, int capacity) {
+            LocalDate departureDate, double basePrice, int capacity) {
         this.id = id;
         this.flightNumber = flightNumber;
         this.origin = origin;
@@ -64,31 +64,49 @@ public class Flight {
     }
 
     /** @return the flight's unique identifier */
-    public int getId() { return id; }
-    
+    public int getId() {
+        return id;
+    }
+
     /** @return the flight number */
-    public String getFlightNumber() { return flightNumber; }
-    
+    public String getFlightNumber() {
+        return flightNumber;
+    }
+
     /** @return the departure airport */
-    public String getOrigin() { return origin; }
-    
+    public String getOrigin() {
+        return origin;
+    }
+
     /** @return the arrival airport */
-    public String getDestination() { return destination; }
-    
+    public String getDestination() {
+        return destination;
+    }
+
     /** @return the departure date */
-    public LocalDate getDepartureDate() { return departureDate; }
-    
+    public LocalDate getDepartureDate() {
+        return departureDate;
+    }
+
     /** @return the standard ticket price */
-    public double getBasePrice() { return basePrice; }
-    
+    public double getBasePrice() {
+        return basePrice;
+    }
+
     /** @return the maximum passenger capacity */
-    public int getCapacity() { return capacity; }
-    
+    public int getCapacity() {
+        return capacity;
+    }
+
     /** @return true if the flight has been soft-deleted */
-    public boolean isDeleted() { return isDeleted; }
-    
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
     /** @param deleted true to mark as deleted, false otherwise */
-    public void setDeleted(boolean deleted) { this.isDeleted = deleted; }
+    public void setDeleted(boolean deleted) {
+        this.isDeleted = deleted;
+    }
 
     /**
      * Calculates the ticket price based on how far in advance the booking is made.
@@ -117,16 +135,42 @@ public class Flight {
      * @return true if passenger was added successfully, false if flight is full
      */
     public boolean addPassenger(Customer passenger) {
-        if (passengers.size() < capacity) {
-            return passengers.add(passenger);
+        if (passenger == null) {
+            return false;
         }
-        return false;
+        // Check if flight is full
+        if (passengers.size() >= capacity) {
+            return false;
+        }
+        // Check if passenger is already on this flight
+        if (passengers.contains(passenger)) {
+            return false;
+        }
+        System.out.println("DEBUG: Adding passenger " + passenger.getName() + " to flight " + flightNumber);
+        boolean added = passengers.add(passenger);
+        System.out.println("DEBUG: Current passenger count: " + passengers.size());
+        return added;
+    }
+
+    /**
+     * Removes a passenger from the flight when their booking is cancelled.
+     * 
+     * @param customer the customer to remove from the flight
+     * @return true if the customer was removed, false if they weren't on the flight
+     */
+    public boolean removePassenger(Customer customer) {
+        return passengers.remove(customer);
     }
 
     /**
      * @return a defensive copy of the passenger list
      */
     public List<Customer> getPassengers() {
+        System.out.println("DEBUG: Getting passengers for flight " + flightNumber);
+        System.out.println("DEBUG: Number of passengers: " + passengers.size());
+        for (Customer c : passengers) {
+            System.out.println("DEBUG: Passenger: " + c.getName());
+        }
         return new ArrayList<>(passengers);
     }
 
@@ -138,7 +182,7 @@ public class Flight {
     public String getDetailsShort() {
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         return "Flight #" + id + " - " + flightNumber + " - " + origin + " to " + destination +
-               " on " + departureDate.format(dtf) + ", Base Price: $" + basePrice + ", Capacity: " + capacity;
+                " on " + departureDate.format(dtf) + ", Base Price: $" + basePrice + ", Capacity: " + capacity;
     }
 
     /**
@@ -149,20 +193,21 @@ public class Flight {
     public String getDetailsLong() {
         StringBuilder sb = new StringBuilder();
         sb.append("Flight ID: ").append(id)
-          .append("\nFlight Number: ").append(flightNumber)
-          .append("\nOrigin: ").append(origin)
-          .append("\nDestination: ").append(destination)
-          .append("\nDeparture Date: ").append(departureDate)
-          .append("\nBase Price: $").append(basePrice)
-          .append("\nCapacity: ").append(capacity)
-          .append("\nPassengers: ");
+                .append("\nFlight Number: ").append(flightNumber)
+                .append("\nOrigin: ").append(origin)
+                .append("\nDestination: ").append(destination)
+                .append("\nDeparture Date: ").append(departureDate)
+                .append("\nBase Price: $").append(basePrice)
+                .append("\nCapacity: ").append(capacity)
+                .append("\nPassengers: ");
         if (passengers.isEmpty()) {
             sb.append("None");
         } else {
             for (Customer c : passengers) {
                 sb.append(c.getName()).append(" (").append(c.getPhone()).append("), ");
             }
-            if(sb.length()>=2) sb.setLength(sb.length()-2);
+            if (sb.length() >= 2)
+                sb.setLength(sb.length() - 2);
         }
         return sb.toString();
     }
