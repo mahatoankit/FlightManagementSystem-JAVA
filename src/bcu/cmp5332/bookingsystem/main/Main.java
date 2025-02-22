@@ -1,11 +1,8 @@
 package bcu.cmp5332.bookingsystem.main;
 
 import bcu.cmp5332.bookingsystem.data.FlightBookingSystemData;
-import bcu.cmp5332.bookingsystem.gui.LoginWindow;
 import bcu.cmp5332.bookingsystem.model.FlightBookingSystem;
 import bcu.cmp5332.bookingsystem.commands.Command;
-
-import javax.swing.SwingUtilities;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
