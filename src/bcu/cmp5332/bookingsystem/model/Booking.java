@@ -72,6 +72,7 @@ public class Booking {
         }
     }
 
+ 
     /**
      * @return the booking's unique identifier
      */
