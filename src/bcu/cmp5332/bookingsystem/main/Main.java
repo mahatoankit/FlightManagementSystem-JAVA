@@ -12,33 +12,39 @@ import java.io.InputStreamReader;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        try {
-            FlightBookingSystem fbs = FlightBookingSystemData.load();
-            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-            
+        FlightBookingSystem fbs = null;
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(System.in))) {
+            fbs = FlightBookingSystemData.load();
+
             System.out.println("Flight Booking System");
             System.out.println("Enter 'help' for command list or 'loadgui' to launch GUI");
-            
+
             while (true) {
                 System.out.print("> ");
                 String line = br.readLine();
-                
+
                 if (line.trim().equalsIgnoreCase("exit")) {
-                    break;
+                    if (fbs != null) {
+                        FlightBookingSystemData.store(fbs);
+                    }
+                    System.exit(0);
                 }
-                
+
                 try {
                     Command command = CommandParser.parse(line);
                     command.execute(fbs);
                 } catch (FlightBookingSystemException ex) {
-                    System.out.println(ex.getMessage());
+                    System.err.println("Command error: " + ex.getMessage());
                 }
             }
-            
-            FlightBookingSystemData.store(fbs);
-            
-        } catch (IOException | FlightBookingSystemException ex) {
-            System.err.println("Error: " + ex.getMessage());
+        } catch (IOException ex) {
+            System.err.println("I/O Error: " + ex.getMessage());
+            ex.printStackTrace();
+            System.exit(1);
+        } catch (FlightBookingSystemException ex) {
+            System.err.println("System Error: " + ex.getMessage());
+            ex.printStackTrace();
+            System.exit(1);
         }
     }
 }
