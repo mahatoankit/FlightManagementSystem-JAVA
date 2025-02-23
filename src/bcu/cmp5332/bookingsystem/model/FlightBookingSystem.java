@@ -61,11 +61,10 @@ public class FlightBookingSystem {
     public Flight getFlightByID(int id) throws FlightBookingSystemException {
         Flight f = flights.get(id);
         if (f == null) {
-            System.out.println("DEBUG: Flight " + id + " not found in system");
+        
             throw new FlightBookingSystemException("Flight #" + id + " not found in the system.");
         }
         if (f.isDeleted()) {
-            System.out.println("DEBUG: Flight " + id + " was found but is deleted");
             throw new FlightBookingSystemException("Flight #" + id + " has been deleted.");
         }
         return f;
@@ -200,22 +199,15 @@ public class FlightBookingSystem {
      *                                      full
      */
     public Booking addBooking(int customerId, int flightId, LocalDate bookingDate) throws FlightBookingSystemException {
-        System.out.println("DEBUG: Creating new booking");
-        System.out.println("DEBUG: Customer ID: " + customerId);
-        System.out.println("DEBUG: Flight ID: " + flightId);
-
+       
         Customer customer = getCustomerByID(customerId);
         Flight flight = getFlightByID(flightId);
 
-        System.out.println("DEBUG: Customer found: " + customer.getName());
-        System.out.println("DEBUG: Flight found: " + flight.getFlightNumber());
 
         if (!flight.addPassenger(customer)) {
-            System.out.println("DEBUG: Failed to add passenger to flight");
             throw new FlightBookingSystemException("Flight is full or passenger already booked");
         }
 
-        System.out.println("DEBUG: Passenger added to flight successfully");
 
         double price = flight.calculatePrice(bookingDate);
         int bookingId = bookings.size() + cancelledBookings.size() + 1;
@@ -224,7 +216,6 @@ public class FlightBookingSystem {
         customer.addBooking(booking);
         bookings.put(bookingId, booking);
 
-        System.out.println("DEBUG: Booking created successfully with ID: " + bookingId);
         return booking;
     }
 
@@ -258,9 +249,6 @@ public class FlightBookingSystem {
         // Update customer's booking list
         customer.cancelBooking(booking);
 
-        System.out.println("DEBUG: Booking " + bookingId + " cancelled successfully");
-        System.out.println("DEBUG: Customer removed from flight " + flight.getFlightNumber());
-        System.out.println("DEBUG: Remaining passengers on flight: " + flight.getPassengers().size());
     }
 
     /**

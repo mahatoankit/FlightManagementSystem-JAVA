@@ -59,7 +59,7 @@ public class LoginWindow extends JFrame implements ActionListener {
         titlePanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 20, 0));
         titlePanel.setBackground(DARKER_BG); // Set background color to dark
 
-        JLabel titleLabel = new JLabel("BCU Airlines");
+        JLabel titleLabel = new JLabel("AL-Qaida Airlines");
         titleLabel.setFont(TITLE_FONT);
         titleLabel.setForeground(TEXT_COLOR);
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
