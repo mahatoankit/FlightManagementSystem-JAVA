@@ -117,7 +117,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## 👥 Authors
 
-- **Your Name** - *Initial work* - [GitHub Profile](https://github.com/yourusername)
+- **Ankit Mahato** - *Initial work* - [GitHub Profile](https://github.com/mahatoankit)
 
 ## 🙏 Acknowledgments
 
