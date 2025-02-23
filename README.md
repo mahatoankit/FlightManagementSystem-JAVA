@@ -56,7 +56,7 @@ java src/bcu/cmp5332/bookingsystem/main/Main
 
 ### GUI Navigation
 
-![GUI Screenshot](path/to/screenshot.png)
+![GUI Screenshot](resources/screenshot/image.png)
 
 1. **Main Window**
    - Flight List
